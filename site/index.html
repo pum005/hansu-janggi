@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한수 장기 — 설치 없이 바로 두는 장기 AI 대국</title>
+<meta name="description" content="회원가입이나 앱 설치 없이 브라우저에서 바로 장기 AI와 대국하세요. 실력 4단계, 훈수, 무르기, 상차림 선택을 지원합니다.">
+<meta name="theme-color" content="#f5f4f0">
+<link rel="canonical" href="https://example.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="한수 장기 — 설치 없이 바로 두는 장기 AI 대국">
+<meta property="og:description" content="브라우저 안에서 엔진이 직접 수를 읽는 무료 장기 사이트">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/game.css">
+<link rel="modulepreload" href="/assets/engine/v1/ffish.js">
+<script src="/assets/js/site.js" defer></script>
+<script src="/assets/js/game.js" type="module"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="/"><span class="logo-mark">將</span>한수 장기</a>
+  <button class="menu-btn" aria-label="메뉴" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="nav" aria-label="주 메뉴">
+    <a href="/" aria-current="page">대국</a>
+    <a href="/rules/">장기 규칙</a>
+    <a href="/setups/">상차림</a>
+    <a href="/strategy/">초보 전략</a>
+    <a href="/engine/">엔진 소개</a>
+  </nav>
+</header>
+
+<main class="game">
+  <section class="board-col" aria-label="장기판">
+    <div class="pbar">
+      <div class="player"><span class="chip han" id="aiChip">漢</span><span id="aiName">AI · 고수</span>
+        <span class="turn han" id="aiTurn" hidden><span class="dot"></span><span id="aiTurnText">차례</span></span></div>
+    </div>
+    <div class="board-wrap">
+      <svg id="board" viewBox="-30 -30 960 1060" role="img" aria-label="장기판. 내 기물을 누른 뒤 움직일 곳을 누르세요."></svg>
+      <div class="result" id="result" hidden>
+        <div class="result-box" role="dialog" aria-live="assertive">
+          <strong id="resultTitle"></strong>
+          <p id="resultText"></p>
+          <div class="row"><button class="btn" id="resultUndo">무르기</button><button class="btn primary" id="resultNew">새 대국</button></div>
+          <button class="close" id="resultClose">판 보기</button>
+        </div>
+      </div>
+    </div>
+    <div class="pbar">
+      <div class="player"><span class="chip cho" id="meChip">楚</span>나
+        <span class="turn cho" id="meTurn" hidden><span class="dot"></span><span id="meTurnText">내 차례</span></span></div>
+      <div class="muted" id="meSetup"></div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <section class="card settings-card" aria-label="대국 설정">
+      <div class="label">대국 설정</div>
+      <div class="seg" id="levelSeg" role="group" aria-label="AI 실력">
+        <button data-level="0" aria-pressed="false">입문</button>
+        <button data-level="1" aria-pressed="false">중수</button>
+        <button data-level="2" aria-pressed="true">고수</button>
+        <button data-level="3" aria-pressed="false">최강</button>
+      </div>
+      <div class="seg" role="group" aria-label="내 진영" style="margin-top:12px">
+        <button id="sideCho" aria-pressed="true">초 · 먼저 둠</button>
+        <button id="sideHan" aria-pressed="false">한 · 나중에 둠</button>
+      </div>
+      <div class="two">
+        <div><label class="field-label" for="mySetup">내 상차림</label><div class="select"><select id="mySetup"></select></div></div>
+        <div><label class="field-label" for="engSetup">AI 상차림</label><div class="select"><select id="engSetup"></select></div></div>
+      </div>
+      <p class="note">실력은 바로 바뀌고, 진영과 상차림은 새 대국부터 적용됩니다.</p>
+    </section>
+
+    <section class="card actions-card" aria-label="대국 조작">
+      <div class="actions">
+        <button class="btn hint" id="hintBtn" disabled>훈수</button>
+        <button class="btn" id="undoBtn" disabled>무르기</button>
+        <button class="btn" id="passBtn" disabled>한수 쉼</button>
+        <button class="btn primary" id="newBtn" disabled>새 대국</button>
+      </div>
+    </section>
+
+    <section class="card status-card" aria-live="polite">
+      <div class="status-line" id="statusText">엔진을 불러오는 중…</div>
+      <div class="substatus" id="subText">처음 한 번만 엔진 파일(약 1MB)을 받습니다</div>
+      <div class="label" style="margin-bottom:8px">형세 <span id="evalText">0.0</span></div>
+      <div class="evalbar"><span id="evalFill"></span></div>
+      <div class="evalrow"><span>초 유리</span><span>한 유리</span></div>
+      <div class="material" id="materialText"></div>
+    </section>
+
+    <section class="card moves-card">
+      <div class="label">수순</div>
+      <div class="moves" id="moveList"><span class="empty">아직 둔 수가 없습니다</span></div>
+    </section>
+
+    <div class="ad-slot game-ad" data-ad="game"></div>
+  </aside>
+</main>
+
+<footer class="site-footer">
+  <span>© 2026 한수 장기 · <a href="/engine/">Fairy-Stockfish 엔진</a> 사용 (GPL-3.0)</span>
+  <nav><a href="/privacy/">개인정보처리방침</a><a href="/source/">소스 공개</a></nav>
+</footer>
+</body>
+</html>
