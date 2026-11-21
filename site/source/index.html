@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>소스 공개 — 한수 장기</title>
+<meta name="description" content="한수 장기가 사용하는 오픈소스 소프트웨어와 GPL-3.0 라이선스 고지, 수정한 엔진 소스 저장소 안내.">
+<meta name="theme-color" content="#f5f4f0">
+<link rel="canonical" href="https://example.com/source/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="소스 공개 — 한수 장기">
+<meta property="og:description" content="한수 장기가 사용하는 오픈소스 소프트웨어와 GPL-3.0 라이선스 고지, 수정한 엔진 소스 저장소 안내.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/article.css">
+<script src="/assets/js/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="/"><span class="logo-mark">將</span>한수 장기</a>
+  <button class="menu-btn" aria-label="메뉴" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="nav" aria-label="주 메뉴">
+    <a href="/">대국</a>
+    <a href="/rules/">장기 규칙</a>
+    <a href="/setups/">상차림</a>
+    <a href="/strategy/">초보 전략</a>
+    <a href="/engine/">엔진 소개</a>
+  </nav>
+</header>
+
+<main class="article">
+<h1>소스 공개</h1>
+<p class="lead">한수 장기는 GPL-3.0 라이선스로 공개된 오픈소스 소프트웨어를 사용합니다. 라이선스에 따라 이 사이트의 소스와 수정한 엔진의 소스를 모두 공개합니다.</p>
+
+<h2>이 사이트의 소스</h2>
+<p>사이트 화면 코드, 수정한 엔진 소스, 빌드 방법을 아래 저장소에 공개합니다.</p>
+<div class="callout"><p>저장소: <a href="https://github.com/pum005/hansu-janggi" target="_blank" rel="noopener">github.com/pum005/hansu-janggi</a></p></div>
+<p>사이트 코드 역시 GPL-3.0으로 배포합니다. 글 페이지의 문장과 디자인은 별도 저작물입니다.</p>
+
+<h2>사용한 오픈소스</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>이름</th><th>용도</th><th>라이선스</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://github.com/fairy-stockfish/Fairy-Stockfish" target="_blank" rel="noopener">Fairy-Stockfish</a></td><td>장기 AI 엔진. 단일 스레드 WebAssembly로 수정해 빌드</td><td>GPL-3.0</td></tr>
+    <tr><td><a href="https://www.npmjs.com/package/ffish-es6" target="_blank" rel="noopener">ffish-es6</a></td><td>합법수·장군·빅장·승패 판정</td><td>GPL-3.0</td></tr>
+    <tr><td><a href="https://github.com/orioncactus/pretendard" target="_blank" rel="noopener">Pretendard</a></td><td>본문 글꼴</td><td>SIL OFL 1.1</td></tr>
+    <tr><td><a href="https://fonts.google.com/noto/specimen/Noto+Serif+KR" target="_blank" rel="noopener">Noto Serif KR</a></td><td>기물 한자 글꼴</td><td>SIL OFL 1.1</td></tr>
+  </tbody>
+</table></div>
+
+<h2>엔진을 직접 빌드하는 방법</h2>
+<p>저장소의 <code>engine/</code> 폴더에 이 사이트가 내려보내는 <code>janggi-engine.wasm</code>을 만드는 데 필요한 것이 모두 있습니다.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>파일</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.sh</code></td><td>원본 소스(고정 커밋)와 wasi-sdk 25를 내려받아 패치를 적용하고 빌드</td></tr>
+    <tr><td><code>patches/single-thread.patch</code></td><td>원본 <code>thread.cpp</code>에 대한 수정. 탐색을 별도 스레드 없이 그 자리에서 실행</td></tr>
+    <tr><td><code>wasi_single_thread.h</code></td><td>스레드가 없는 WASI 환경을 위한 잠금·스레드 대체 타입</td></tr>
+    <tr><td><code>wasi_stubs.cpp</code></td><td>WASI에 없는 함수 두 개(<code>__cxa_thread_atexit</code>, <code>madvise</code>)의 빈 구현</td></tr>
+  </tbody>
+</table></div>
+<p>원본: Fairy-Stockfish 커밋 <code>52838835f7234e29fb48fd88eb39fb3c7e46fcfa</code> (2026-11-19). 저장소를 받은 뒤 <code>./engine/build.sh</code>를 실행하면 같은 파일이 만들어집니다.</p>
+
+<h2>원본과 달라진 점</h2>
+<ul>
+  <li>여러 스레드 대신 하나의 스레드로 돌도록 고쳐, 특수한 서버 헤더 없이 브라우저에서 실행되게 했습니다.</li>
+  <li>WASI 형식의 WebAssembly로 빌드하고, 브라우저에서 표준 입출력을 흉내 내는 작은 실행기(<code>site/assets/engine/v1/engine-worker.js</code>)를 붙였습니다.</li>
+  <li>신경망(NNUE) 파일은 넣지 않아 전통 평가 함수로 둡니다.</li>
+  <li>규칙 판정 라이브러리 ffish-es6 0.7.10은 수정하지 않고 npm 배포본을 그대로 씁니다. 소스는 Fairy-Stockfish 저장소에 함께 있습니다.</li>
+</ul>
+
+<h2>라이선스 전문</h2>
+<p>GNU General Public License v3.0 전문은 <a href="/LICENSE.txt">여기</a>에서 볼 수 있습니다.</p>
+<p>이 프로그램은 유용하기를 바라며 배포되지만, 어떠한 보증도 하지 않습니다. 상품성이나 특정 목적 적합성에 대한 묵시적 보증도 포함되지 않습니다. 자세한 내용은 GPL-3.0을 참고하세요.</p>
+</main>
+
+<footer class="site-footer">
+  <span>© 2026 한수 장기 · <a href="/engine/">Fairy-Stockfish 엔진</a> 사용 (GPL-3.0)</span>
+  <nav><a href="/privacy/">개인정보처리방침</a><a href="/source/">소스 공개</a></nav>
+</footer>
+</body>
+</html>
