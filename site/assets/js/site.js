@@ -8,10 +8,10 @@
              'adfit'   카카오 애드핏
    ===================================================================== */
 const ADS = {
-  provider: 'none',
+  provider: 'adsense',
 
   adsense: {
-    client: '',                             // AdSense 게시자 ID (예: ca-pub-1234567890123456)
+    client: 'ca-pub-6082998240145089',  // AdSense 게시자 ID
     slots: { game: '', article: '' },       // 광고 단위 ID (반응형 디스플레이 광고)
   },
 
