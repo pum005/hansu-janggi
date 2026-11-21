@@ -1,0 +1,46 @@
+diff --git a/src/thread.cpp b/src/thread.cpp
+index fc789575..8631c4d3 100644
+--- a/src/thread.cpp
++++ b/src/thread.cpp
+@@ -80,6 +80,17 @@ void Thread::clear() {
+ 
+ void Thread::start_searching() {
+ 
++#ifdef SINGLE_THREAD
++  // 단일 스레드 빌드: 깨울 스레드가 없으므로 호출한 자리에서 바로 탐색한다.
++  // 탐색이 끝나야 돌아오며, 그동안 시간 관리는 MainThread::check_time()이 맡는다.
++  if (exit)
++      return;
++  searching = true;
++  search();
++  searching = false;
++  return;
++#endif
++
+   std::lock_guard<std::mutex> lk(mutex);
+   searching = true;
+   cv.notify_one(); // Wake up the thread in idle_loop()
+@@ -91,6 +102,10 @@ void Thread::start_searching() {
+ 
+ void Thread::wait_for_search_finished() {
+ 
++#ifdef SINGLE_THREAD
++  return; // 탐색은 start_searching() 안에서 이미 끝났다.
++#endif
++
+   std::unique_lock<std::mutex> lk(mutex);
+   cv.wait(lk, [&]{ return !searching; });
+ }
+@@ -101,6 +116,12 @@ void Thread::wait_for_search_finished() {
+ 
+ void Thread::idle_loop() {
+ 
++#ifdef SINGLE_THREAD
++  // 단일 스레드 빌드: 생성자에서 그 자리에서 호출되므로 대기하지 않고 바로 돌아온다.
++  searching = false;
++  return;
++#endif
++
+   // If OS already scheduled us on a different group than 0 then don't overwrite
+   // the choice, eventually we are one of many one-threaded processes running on
+   // some Windows NUMA hardware, for instance in fishtest. To make it simple,

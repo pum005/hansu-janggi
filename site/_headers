@@ -1,0 +1,11 @@
+# Cloudflare Pages 응답 헤더
+# 엔진 파일은 폴더 이름(v1)에 버전이 들어가므로 1년 캐시. 엔진을 바꾸면 v2 폴더로 올리세요.
+/assets/engine/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=86400
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
