@@ -6,8 +6,10 @@
 
 오픈소스 엔진 [Fairy-Stockfish](https://github.com/fairy-stockfish/Fairy-Stockfish)가 서버가 아닌 방문자의 브라우저 안에서 직접 수를 읽습니다.
 
+### [hansujanggi.com](https://hansujanggi.com) 에서 바로 두기
+
 ![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-1d1d1f)
-![Static site](https://img.shields.io/badge/hosting-Cloudflare%20Pages-f38020)
+![Hosting](https://img.shields.io/badge/hosting-Cloudflare-f38020)
 ![Engine](https://img.shields.io/badge/engine-WebAssembly%20(WASI)-654ff0)
 
 </div>
@@ -39,7 +41,7 @@ site/                         배포 폴더 (빌드 단계 없음)
 │   ├── js/game.js            대국 로직 (규칙 판정 · 화면 · 엔진 통신)
 │   ├── js/site.js            모바일 메뉴 · 광고 설정
 │   └── engine/v1/            엔진 WASM · 실행 워커 · 규칙 라이브러리(ffish)
-└── _headers                  캐시 헤더 (Cloudflare Pages)
+└── _headers                  캐시 헤더 (Cloudflare)
 engine/                       엔진 빌드 스크립트 · 단일 스레드 패치
 tools/                        글 페이지 생성기와 본문
 design/                       디자인 시안
