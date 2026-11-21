@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>장기 규칙 — 한수 장기</title>
+<meta name="description" content="장기판과 기물, 기물별 이동, 궁성, 멱, 장군과 외통, 빅장, 점수와 덤까지 처음 두는 사람을 위한 장기 규칙 정리.">
+<meta name="theme-color" content="#f5f4f0">
+<link rel="canonical" href="https://example.com/rules/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="장기 규칙 — 한수 장기">
+<meta property="og:description" content="장기판과 기물, 기물별 이동, 궁성, 멱, 장군과 외통, 빅장, 점수와 덤까지 처음 두는 사람을 위한 장기 규칙 정리.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/article.css">
+<script src="/assets/js/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="/"><span class="logo-mark">將</span>한수 장기</a>
+  <button class="menu-btn" aria-label="메뉴" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="nav" aria-label="주 메뉴">
+    <a href="/">대국</a>
+    <a href="/rules/" aria-current="page">장기 규칙</a>
+    <a href="/setups/">상차림</a>
+    <a href="/strategy/">초보 전략</a>
+    <a href="/engine/">엔진 소개</a>
+  </nav>
+</header>
+
+<main class="article">
+<p class="eyebrow">처음 두는 사람을 위한</p>
+<h1>장기 규칙 한눈에 보기</h1>
+<p class="lead">장기는 두 사람이 초(楚)와 한(漢)으로 나뉘어 상대 궁을 잡는 놀이입니다. 기물마다 움직이는 법이 다르고, 궁은 궁성 밖으로 나갈 수 없다는 점이 특징입니다.</p>
+
+<nav class="toc" aria-label="목차">
+  <strong>목차</strong>
+  <ol>
+    <li><a href="#board">장기판과 기물</a></li>
+    <li><a href="#moves">기물별 움직임</a></li>
+    <li><a href="#myeok">멱: 길이 막히는 규칙</a></li>
+    <li><a href="#check">장군과 외통</a></li>
+    <li><a href="#pass">한수 쉼</a></li>
+    <li><a href="#bikjang">빅장</a></li>
+    <li><a href="#score">점수와 덤</a></li>
+  </ol>
+</nav>
+
+<h2 id="board">1. 장기판과 기물</h2>
+<p>장기판은 가로 9줄, 세로 10줄의 선으로 이루어져 있고, 기물은 칸 안이 아니라 <strong>선이 만나는 점</strong>에 놓습니다. 양쪽 가운데 아래에는 X자 대각선이 그어진 3×3 구역이 있는데, 이것을 <strong>궁성</strong>이라고 부릅니다.</p>
+<p>초와 한은 똑같이 16개씩 기물을 갖습니다. 초는 먼저 두고, 한은 나중에 두는 대신 점수에서 덤을 받습니다. 이 사이트에서는 초를 초록색, 한을 빨간색으로 표시합니다.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>기물</th><th>초 / 한</th><th>개수</th><th>처음 자리</th></tr></thead>
+  <tbody>
+    <tr><td>궁</td><td><span class="hj cho">楚</span> / <span class="hj han">漢</span></td><td>1</td><td>궁성 한가운데</td></tr>
+    <tr><td>차</td><td><span class="hj cho">車</span> / <span class="hj han">車</span></td><td>2</td><td>맨 끝줄 양쪽 귀</td></tr>
+    <tr><td>포</td><td><span class="hj cho">包</span> / <span class="hj han">包</span></td><td>2</td><td>셋째 줄, 차 바로 안쪽 세로줄</td></tr>
+    <tr><td>마</td><td><span class="hj cho">馬</span> / <span class="hj han">馬</span></td><td>2</td><td>맨 끝줄 (상차림에 따라 자리 바뀜)</td></tr>
+    <tr><td>상</td><td><span class="hj cho">象</span> / <span class="hj han">象</span></td><td>2</td><td>맨 끝줄 (상차림에 따라 자리 바뀜)</td></tr>
+    <tr><td>사</td><td><span class="hj cho">士</span> / <span class="hj han">士</span></td><td>2</td><td>궁성 맨 끝줄 양쪽</td></tr>
+    <tr><td>졸·병</td><td><span class="hj cho">卒</span> / <span class="hj han">兵</span></td><td>5</td><td>넷째 줄, 한 줄 걸러 하나씩</td></tr>
+  </tbody>
+</table></div>
+
+<h2 id="moves">2. 기물별 움직임</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>기물</th><th>움직임</th></tr></thead>
+  <tbody>
+    <tr><td><strong>궁</strong></td><td>궁성 안에서만, 선을 따라 한 칸씩 움직입니다. 궁성의 대각선 위에 있으면 대각선으로도 한 칸 갈 수 있습니다.</td></tr>
+    <tr><td><strong>사</strong></td><td>궁과 똑같이 궁성 안에서 선을 따라 한 칸씩 움직입니다.</td></tr>
+    <tr><td><strong>차</strong></td><td>가로나 세로로 막히지 않는 한 몇 칸이든 갑니다. 궁성 안에서는 대각선을 따라서도 움직입니다. 가장 강한 기물입니다.</td></tr>
+    <tr><td><strong>포</strong></td><td>가로나 세로로 움직이되, 반드시 <strong>기물 하나를 뛰어넘어야</strong> 합니다. 넘는 기물(다리)은 우리 편이든 상대 편이든 상관없지만, 포는 다리로 쓸 수 없고 포끼리는 잡을 수도 없습니다. 궁성 대각선에서도 가운데 기물을 넘어 움직일 수 있습니다.</td></tr>
+    <tr><td><strong>마</strong></td><td>앞뒤좌우로 한 칸 간 뒤 그 방향의 대각선으로 한 칸 더 갑니다. 날 일(日)자 모양입니다.</td></tr>
+    <tr><td><strong>상</strong></td><td>앞뒤좌우로 한 칸 간 뒤 대각선으로 두 칸 더 갑니다. 마보다 멀리 가지만 그만큼 길이 잘 막힙니다.</td></tr>
+    <tr><td><strong>졸·병</strong></td><td>앞이나 옆으로 한 칸씩 갑니다. 뒤로는 갈 수 없습니다. 상대 궁성에 들어가면 궁성 대각선을 따라 앞쪽 대각선으로도 갈 수 있습니다.</td></tr>
+  </tbody>
+</table></div>
+<div class="callout tip"><p><strong>장기판에는 강이 없습니다.</strong> 중국 장기(상기)와 달리 가운데 강이 없어서 상과 사를 빼면 모든 기물이 판 어디로든 나아갈 수 있습니다.</p></div>
+
+<div class="ad-slot" data-ad="article"></div>
+
+<h2 id="myeok">3. 멱: 길이 막히는 규칙</h2>
+<p>마와 상은 목적지까지 가는 길 중간에 다른 기물이 있으면 움직일 수 없습니다. 이것을 <strong>멱</strong>이라고 하고, "멱에 걸렸다"고 말합니다.</p>
+<ul>
+  <li><strong>마</strong>: 처음 직선으로 가는 한 칸이 막히면 그 방향으로는 못 갑니다.</li>
+  <li><strong>상</strong>: 직선 한 칸, 그리고 대각선 첫 칸 중 어느 하나라도 막히면 못 갑니다.</li>
+</ul>
+<p>멱은 수비에서 아주 쓸모가 많습니다. 상대 마가 들어오는 길목에 기물 하나만 두어도 마를 묶을 수 있습니다.</p>
+
+<h2 id="check">4. 장군과 외통</h2>
+<p>다음 수에 상대 궁을 잡을 수 있는 상태를 <strong>장군</strong>이라고 합니다. 장군을 받은 쪽은 반드시 그 장군을 풀어야 하며, 푸는 방법은 세 가지입니다.</p>
+<ol>
+  <li>궁을 안전한 자리로 옮긴다.</li>
+  <li>장군을 부른 기물과 궁 사이를 다른 기물로 막는다. 포의 장군이라면 다리를 치우거나 하나 더 끼워 넣어도 됩니다.</li>
+  <li>장군을 부른 기물을 잡는다.</li>
+</ol>
+<p>세 가지 모두 불가능하면 <strong>외통</strong>이고, 외통을 당한 쪽이 집니다. 이 사이트에서는 장군이 걸리면 궁 둘레에 빨간 테두리가 생기고, 움직일 수 있는 수만 둘 수 있습니다.</p>
+
+<h2 id="pass">5. 한수 쉼</h2>
+<p>장기에서는 둘 만한 수가 없을 때 자기 차례를 그냥 넘길 수 있습니다. 이것을 <strong>한수 쉼</strong>이라고 합니다. 이 사이트에서는 규칙상 쉴 수 있을 때만 '한수 쉼' 버튼이 켜집니다.</p>
+
+<h2 id="bikjang">6. 빅장</h2>
+<p>두 궁이 같은 세로줄에서 사이에 아무 기물 없이 마주 보는 것을 <strong>빅장</strong>이라고 합니다. 빅장을 어떻게 처리할지는 대회와 지역마다 규칙이 조금씩 다릅니다. 이 사이트는 Fairy-Stockfish 엔진의 장기 규칙을 따르며, 빅장이 풀리지 않으면 대국을 끝내고 아래 점수로 승패를 가립니다.</p>
+
+<h2 id="score">7. 점수와 덤</h2>
+<p>빅장처럼 점수로 판정해야 할 때는 남은 기물의 점수를 더해 승패를 가립니다. 실전에서도 형세를 가늠하는 기준으로 자주 씁니다.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>기물</th><th>점수</th><th>한쪽 합계</th></tr></thead>
+  <tbody>
+    <tr><td>차</td><td>13점</td><td>26점</td></tr>
+    <tr><td>포</td><td>7점</td><td>14점</td></tr>
+    <tr><td>마</td><td>5점</td><td>10점</td></tr>
+    <tr><td>상</td><td>3점</td><td>6점</td></tr>
+    <tr><td>사</td><td>3점</td><td>6점</td></tr>
+    <tr><td>졸·병</td><td>2점</td><td>10점</td></tr>
+    <tr><td colspan="2"><strong>합계</strong></td><td><strong>72점</strong></td></tr>
+  </tbody>
+</table></div>
+<p>나중에 두는 한은 <strong>덤 1.5점</strong>을 받아 처음에 73.5점으로 시작합니다. 덤에 소수점이 있어 점수 판정에서 비기는 일이 없습니다. 대국 화면의 형세 막대 아래에서 지금 기물 점수를 확인할 수 있습니다.</p>
+
+<div class="ad-slot" data-ad="article"></div>
+
+<div class="cta"><p>규칙을 익혔다면 입문 단계 AI와 한 판 둬 보세요.</p><a class="btn" href="/">대국 시작</a></div>
+</main>
+
+<footer class="site-footer">
+  <span>© 2026 한수 장기 · <a href="/engine/">Fairy-Stockfish 엔진</a> 사용 (GPL-3.0)</span>
+  <nav><a href="/privacy/">개인정보처리방침</a><a href="/source/">소스 공개</a></nav>
+</footer>
+</body>
+</html>
