@@ -1,0 +1,15 @@
+# OS
+.DS_Store
+
+# 엔진 빌드 작업 폴더 (wasi-sdk, 원본 소스) — engine/build.sh가 다시 받음
+engine/.build/
+
+# 비공개 문서·자료
+장기 스톡피쉬 웹서비스 기획서.md
+prototype/
+
+# 비밀 정보
+.env
+.env.*
+*.pem
+*.key
