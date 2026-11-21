@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://example.com/</loc></url>
-  <url><loc>https://example.com/engine/</loc></url>
-  <url><loc>https://example.com/privacy/</loc></url>
-  <url><loc>https://example.com/rules/</loc></url>
-  <url><loc>https://example.com/setups/</loc></url>
-  <url><loc>https://example.com/source/</loc></url>
-  <url><loc>https://example.com/strategy/</loc></url>
+  <url><loc>https://hansujanggi.com/</loc></url>
+  <url><loc>https://hansujanggi.com/engine/</loc></url>
+  <url><loc>https://hansujanggi.com/privacy/</loc></url>
+  <url><loc>https://hansujanggi.com/rules/</loc></url>
+  <url><loc>https://hansujanggi.com/setups/</loc></url>
+  <url><loc>https://hansujanggi.com/source/</loc></url>
+  <url><loc>https://hansujanggi.com/strategy/</loc></url>
 </urlset>

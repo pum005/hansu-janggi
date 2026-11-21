@@ -10,7 +10,7 @@ import pathlib, re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
-DOMAIN = "https://example.com"  # 도메인을 산 뒤 바꾸세요 (canonical, sitemap에 쓰임)
+DOMAIN = "https://hansujanggi.com"  # canonical, sitemap에 쓰임
 
 NAV = [("/", "대국"), ("/rules/", "장기 규칙"), ("/setups/", "상차림"), ("/strategy/", "초보 전략"), ("/engine/", "엔진 소개")]
 
@@ -23,6 +23,7 @@ TEMPLATE = """<!doctype html>
 <meta name="description" content="{desc}">
 <meta name="theme-color" content="#f5f4f0">
 <link rel="canonical" href="{domain}{path}">
+<meta property="og:url" content="{domain}{path}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{title} — 한수 장기">
 <meta property="og:description" content="{desc}">

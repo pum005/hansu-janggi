@@ -2,15 +2,16 @@
 
 /* =====================================================================
    광고 설정 — 승인받은 뒤 여기만 고치면 됩니다.
-   provider: 'none'    광고 없음 (심사 전 기본값)
-             'adsense' Google AdSense
+   provider: 'none'    광고 없음 (기본값)
+             'adsense' Google AdSense — client만 넣어도 모든 페이지에 AdSense 코드가 들어감
+                       (사이트 심사 단계). 승인 후 slots에 광고 단위 ID를 넣으면 광고 자리가 켜짐
              'adfit'   카카오 애드핏
    ===================================================================== */
 const ADS = {
   provider: 'none',
 
   adsense: {
-    client: 'ca-pub-0000000000000000',     // AdSense 게시자 ID
+    client: '',                             // AdSense 게시자 ID (예: ca-pub-1234567890123456)
     slots: { game: '', article: '' },       // 광고 단위 ID (반응형 디스플레이 광고)
   },
 
@@ -41,13 +42,7 @@ const ADS = {
 
 // 광고
 (() => {
-  const slots = [...document.querySelectorAll('.ad-slot[data-ad]')];
-  if (!slots.length) return;
-  const host = location.hostname;
-  const preview = host === 'localhost' || host === '127.0.0.1' || host === '' || /[?&]ads=preview/.test(location.search);
-  const w = window.innerWidth;
-  const bp = w >= 1024 ? 'desktop' : w >= 640 ? 'tablet' : 'mobile';
-
+  const adsenseSrc = () => `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADS.adsense.client}`;
   const loadScript = (src, attrs = {}) => {
     if (document.querySelector(`script[src="${src}"]`)) return;
     const s = document.createElement('script');
@@ -56,11 +51,20 @@ const ADS = {
     document.head.appendChild(s);
   };
 
+  // AdSense 게시자 ID가 있으면 광고 자리가 없는 페이지에도 코드를 넣는다 (사이트 심사에 필요)
+  if (ADS.provider === 'adsense' && ADS.adsense.client) loadScript(adsenseSrc(), { crossorigin: 'anonymous' });
+
+  const slots = [...document.querySelectorAll('.ad-slot[data-ad]')];
+  if (!slots.length) return;
+  const host = location.hostname;
+  const preview = host === 'localhost' || host === '127.0.0.1' || host === '' || /[?&]ads=preview/.test(location.search);
+  const w = window.innerWidth;
+  const bp = w >= 1024 ? 'desktop' : w >= 640 ? 'tablet' : 'mobile';
+
   for (const slot of slots) {
     const kind = slot.dataset.ad;
 
-    if (ADS.provider === 'adsense' && ADS.adsense.slots[kind]) {
-      loadScript(`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADS.adsense.client}`, { crossorigin: 'anonymous' });
+    if (ADS.provider === 'adsense' && ADS.adsense.client && ADS.adsense.slots[kind]) {
       const ins = document.createElement('ins');
       ins.className = 'adsbygoogle';
       ins.style.display = 'block';
