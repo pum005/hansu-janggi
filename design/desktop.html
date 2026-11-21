@@ -1,0 +1,56 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="style.css">
+<style>
+main{display:flex;gap:28px;justify-content:center;padding:26px 40px 32px}
+.left{display:flex;flex-direction:column;gap:12px}
+.pbar{display:flex;align-items:center;justify-content:space-between;padding:0 6px}
+.right{width:370px;display:flex;flex-direction:column;gap:14px}
+.think{font-size:12.5px;color:var(--sub);display:flex;align-items:center;gap:8px}
+.bars{display:flex;gap:3px}.bars i{width:4px;height:12px;border-radius:2px;background:#cfcac0}.bars i.on{background:var(--han)}
+.sel{display:flex;justify-content:space-between;align-items:center;height:40px;padding:0 14px;border:1px solid var(--line);border-radius:10px;font-size:13.5px}
+</style></head><body>
+<header>
+  <div class="logo"><i>將</i>한수 장기</div>
+  <nav><a class="on">대국</a><a>장기 규칙</a><a>상차림</a><a>초보 전략</a><a>엔진 소개</a></nav>
+</header>
+<main>
+  <section class="left">
+    <div class="pbar">
+      <div class="player"><span class="chip" style="color:var(--han);border-color:var(--han)">漢</span>AI · 고수 <span class="muted">Fairy-Stockfish</span></div>
+      <div class="think"><span class="bars"><i class="on"></i><i class="on"></i><i></i></span>대기 중</div>
+    </div>
+    <div id="board"></div>
+    <div class="pbar">
+      <div class="player"><span class="chip" style="color:var(--cho);border-color:var(--cho)">楚</span>나 <span class="status" style="margin-left:6px"><span class="dot"></span><span class="muted">내 차례</span></span></div>
+      <div class="muted">상차림 · 상마상마</div>
+    </div>
+  </section>
+  <aside class="right">
+    <div class="card">
+      <div class="label">대국 설정</div>
+      <div class="seg" style="margin-bottom:12px"><span class="on">초 (선수)</span><span>한 (후수)</span></div>
+      <div class="sel" style="margin-bottom:12px"><span><span class="muted">상차림 </span>&nbsp;상마상마</span><span class="muted">▾</span></div>
+      <div class="seg"><span>입문</span><span>중수</span><span class="on">고수</span><span>최강</span></div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:10px">
+      <div class="row"><div class="btn hint">훈수 보기</div><div class="btn">무르기</div><div class="btn">한수 쉼</div></div>
+      <div class="row"><div class="btn pri">새 대국</div></div>
+    </div>
+    <div class="card">
+      <div class="label" style="display:flex;justify-content:space-between">형세 <span style="color:var(--cho)">초 +1.4</span></div>
+      <div class="eval"><b></b></div>
+      <div class="evalrow"><span>초 유리</span><span>한 유리</span></div>
+    </div>
+    <div class="card">
+      <div class="label">수순</div>
+      <div class="moves">
+        <div class="n">1</div><div>卒 27→37</div><div>兵 73→63</div>
+        <div class="n">2</div><div>馬 89→77</div><div>兵 74→64</div>
+        <div class="n">3</div><div>卒 37→36</div><div class="last">兵 63→53</div>
+      </div>
+    </div>
+    <div class="ad" style="height:250px"><span>광고 영역</span><small>300 × 250 · 판과 떨어진 자리, 높이 고정</small></div>
+  </aside>
+</main>
+<footer><span>© 2026 한수 장기 · Fairy-Stockfish 엔진 사용 (GPL-3.0)</span><span><a>개인정보처리방침</a><a>소스 공개</a></span></footer>
+<script src="board.js"></script><script>drawBoard(document.getElementById('board'),69)</script>
+</body></html>
