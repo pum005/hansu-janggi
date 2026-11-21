@@ -1,0 +1,141 @@
+/* 한수 장기 — 공통 스타일
+   반응형 기준: 모바일 < 640px ≤ 태블릿 < 1024px ≤ 데스크탑 */
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f4f0;
+  --card: #ffffff;
+  --ink: #1d1d1f;
+  --sub: #6e6e73;
+  --faint: #a8a296;
+  --line: #e6e3dc;
+  --soft: #f1efea;
+  --cho: #17734f;
+  --han: #c0392b;
+  --blue: #2f6fde;
+  --wood-a: #ecd9b0;
+  --wood-b: #e2c993;
+  --grid: #6b5230;
+  --face: #fbf7ee;
+  --radius: 16px;
+  --header-h: 64px;
+  --font-body: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-hanja: "Noto Serif KR", "AppleMyungjo", "Songti SC", "Batang", serif;
+  color-scheme: light;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  min-height: 100svh;
+  display: flex; flex-direction: column;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
+[hidden] { display: none !important; }
+
+/* ---------- 헤더 ---------- */
+.site-header {
+  position: sticky; top: 0; z-index: 20;
+  height: var(--header-h);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 max(20px, env(safe-area-inset-left));
+  background: rgba(255, 255, 255, .82);
+  backdrop-filter: saturate(160%) blur(12px);
+  -webkit-backdrop-filter: saturate(160%) blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: -0.02em; }
+.logo-mark {
+  width: 30px; height: 30px; display: grid; place-items: center;
+  font-family: var(--font-hanja); font-weight: 900; font-size: 16px; color: #fff; background: var(--ink);
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+}
+.nav { display: flex; gap: 26px; font-size: 14.5px; color: var(--sub); }
+.nav a { padding: 6px 0; transition: color .15s; }
+.nav a:hover { color: var(--ink); }
+.nav a[aria-current="page"] { color: var(--ink); font-weight: 700; }
+.menu-btn { display: none; width: 40px; height: 40px; border: 0; background: none; border-radius: 10px; }
+.menu-btn span { display: block; width: 20px; height: 2px; margin: 4px auto; background: var(--ink); border-radius: 2px; transition: transform .2s, opacity .2s; }
+.menu-open .menu-btn span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.menu-open .menu-btn span:nth-child(2) { opacity: 0; }
+.menu-open .menu-btn span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+@media (max-width: 767px) {
+  :root { --header-h: 56px; }
+  .menu-btn { display: block; }
+  .nav {
+    position: absolute; top: var(--header-h); left: 0; right: 0;
+    flex-direction: column; gap: 0; padding: 8px 20px 16px;
+    background: #fff; border-bottom: 1px solid var(--line);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, .06);
+    display: none;
+  }
+  .menu-open .nav { display: flex; }
+  .nav a { padding: 12px 0; font-size: 16px; border-bottom: 1px solid var(--soft); }
+  .nav a:last-child { border-bottom: 0; }
+}
+
+/* ---------- 푸터 ---------- */
+.site-footer {
+  margin-top: auto;
+  display: flex; justify-content: space-between; gap: 10px 24px; flex-wrap: wrap;
+  padding: 22px max(20px, env(safe-area-inset-left)) calc(22px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  color: #9a978f; font-size: 12.5px;
+}
+.site-footer nav { display: flex; gap: 18px; }
+.site-footer a:hover { color: var(--ink); }
+@media (max-width: 639px) {
+  .site-footer { flex-direction: column-reverse; align-items: center; text-align: center; }
+}
+
+/* ---------- 공통 부품 ---------- */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; min-width: 0; }
+.label { font-size: 12px; font-weight: 700; color: var(--sub); letter-spacing: .04em; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.muted { color: var(--sub); font-weight: 400; font-size: 13px; }
+
+.seg { display: flex; background: var(--soft); border-radius: 10px; padding: 3px; gap: 3px; }
+.seg button {
+  flex: 1; border: 0; background: transparent; padding: 8px 0; font-size: 13.5px;
+  border-radius: 8px; color: var(--sub); transition: background .15s, color .15s;
+}
+.seg button[aria-pressed="true"] { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(0, 0, 0, .1); }
+
+.select { position: relative; }
+.select select {
+  width: 100%; height: 40px; padding: 0 34px 0 12px; appearance: none; -webkit-appearance: none;
+  border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 13.5px;
+}
+.select::after { content: ""; position: absolute; right: 14px; top: 17px; border: 5px solid transparent; border-top-color: var(--sub); pointer-events: none; }
+.field-label { display: block; font-size: 12px; color: var(--sub); margin-bottom: 5px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 44px; padding: 0 14px; border-radius: 11px;
+  font-size: 14px; font-weight: 600;
+  border: 1px solid var(--line); background: #fff;
+  transition: border-color .15s, background .15s, opacity .15s;
+}
+.btn:hover:not(:disabled) { border-color: #cfcac0; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn.primary:hover:not(:disabled) { background: #000; }
+.btn.hint { background: #eef3fd; color: var(--blue); border-color: #d6e2fa; }
+
+/* ---------- 광고 자리 ---------- */
+.ad-slot { display: none; width: 100%; overflow: hidden; text-align: center; }
+.ad-slot.on { display: flex; align-items: center; justify-content: center; }
+.ad-slot.placeholder {
+  flex-direction: column; gap: 4px;
+  border: 1.5px dashed #cfcac0; border-radius: 14px; color: var(--faint); font-size: 13px;
+  background: repeating-linear-gradient(45deg, #faf9f6, #faf9f6 10px, #f6f4ef 10px, #f6f4ef 20px);
+}
+.ad-slot.placeholder small { font-size: 11px; letter-spacing: .06em; }
