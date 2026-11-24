@@ -24,11 +24,13 @@ const $ = (id) => document.getElementById(id);
 const svg = $('board');
 
 let ff = null, board = null, worker = null, engineReady = false;
+let viewBoard = null; // 복기 중에 보여 줄 판 (진행 중인 판 board와 따로 둠)
 let reqId = 0, pending = null, resultDismissed = false;
 const st = {
   side: 'cho', level: 2, mySetup: '마상상마', engSetup: '마상상마',
   startFen: '', moves: [], notes: [],
   selected: null, hint: null, evalCho: 0, evalText: '0.0', depth: '', thinking: null, over: null,
+  view: null, // 복기 중이면 보고 있는 수 번호(0 = 첫 배치), 아니면 null
 };
 
 // ---------- 좌표 ----------
@@ -68,6 +70,7 @@ function buildStartFen() {
 
 // ---------- 판 상태 ----------
 function rebuild() {
+  clearView();
   if (board) board.delete();
   board = new ff.Board('janggi', st.startFen);
   st.notes = [];
@@ -82,9 +85,9 @@ function noteFor(m) {
   if (r[1] === 'P' && !board.turn()) name = '병';
   return `${r[2]}${name}${r[3]}`;
 }
-function pieceGrid() {
+function pieceGrid(b = board) {
   const out = [];
-  board.fen().split(' ')[0].split('/').forEach((row, i) => {
+  b.fen().split(' ')[0].split('/').forEach((row, i) => {
     const r = 10 - i; let f = 0;
     for (const ch of row) {
       if (/\d/.test(ch)) f += +ch;
@@ -96,6 +99,29 @@ function pieceGrid() {
 const legalList = () => board.legalMoves().split(' ').filter(Boolean);
 const legalFrom = (f, r) => legalList().filter((m) => { const p = parseMove(m); return p && p.ff === f && p.fr === r && !isPass(p); });
 const passMove = () => legalList().find((m) => isPass(parseMove(m))) || null;
+
+// ---------- 화면에 보이는 판 ----------
+// 복기 중이면 st.view 수까지 둔 판, 아니면 진행 중인 판
+const reviewing = () => st.view !== null;
+const shownBoard = () => (reviewing() ? viewBoard : board);
+const shownCount = () => (reviewing() ? st.view : st.moves.length);
+function clearView() {
+  if (viewBoard) { viewBoard.delete(); viewBoard = null; }
+  st.view = null;
+}
+function setView(n) {
+  if (n === null || n >= st.moves.length) n = null;
+  else n = Math.max(0, n);
+  if (n === st.view) return;
+  clearView();
+  st.view = n;
+  if (n !== null) {
+    viewBoard = new ff.Board('janggi', st.startFen);
+    for (const m of st.moves.slice(0, n)) viewBoard.push(m);
+  }
+  st.selected = null; st.hint = null;
+  render();
+}
 
 // ---------- 그리기 ----------
 function el(tag, attrs, parent) {
@@ -131,9 +157,10 @@ function drawStatic() {
 function render() {
   const pl = $('pieceLayer'), ml = $('markLayer'), ul = $('underLayer');
   pl.innerHTML = ''; ml.innerHTML = ''; ul.innerHTML = '';
+  const b = shownBoard();
 
   // 직전 수: 출발점 점, 도착점 모서리 표시
-  const last = st.moves[st.moves.length - 1];
+  const last = st.moves[shownCount() - 1];
   if (last) {
     const p = parseMove(last);
     const [x1, y1] = toXY(p.ff, p.fr), [x2, y2] = toXY(p.tf, p.tr);
@@ -162,9 +189,9 @@ function render() {
     }
   }
 
-  const grid = pieceGrid();
-  const inCheck = board.isCheck();
-  const stm = sideToMove();
+  const grid = pieceGrid(b);
+  const inCheck = b.isCheck();
+  const stm = b.turn() ? 'cho' : 'han';
   for (const p of grid) {
     const [x, y] = toXY(p.f, p.r);
     const R = SIZE[p.t];
@@ -190,9 +217,9 @@ function render() {
   renderPanel();
 }
 
-function material() {
+function material(b = board) {
   const sum = { cho: 0, han: 1.5 }; // 한 덤 1.5점
-  for (const p of pieceGrid()) sum[p.side] += POINTS[p.t];
+  for (const p of pieceGrid(b)) sum[p.side] += POINTS[p.t];
   return sum;
 }
 
@@ -233,7 +260,7 @@ function renderPanel() {
   const et = $('evalText');
   et.textContent = st.evalText;
   et.className = st.evalCho > 0 ? 'cho' : st.evalCho < 0 ? 'han' : '';
-  if (board) { const m = material(); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
+  if (board) { const m = material(shownBoard()); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
 
   // 버튼
   $('hintBtn').disabled = !myTurn;
@@ -279,6 +306,7 @@ function checkOver() {
   return true;
 }
 function play(m) {
+  clearView(); // 새 수가 두어지면 복기를 끝내고 최신 판으로 돌아옴
   st.notes.push(noteFor(m));
   board.push(m);
   st.moves.push(m);
