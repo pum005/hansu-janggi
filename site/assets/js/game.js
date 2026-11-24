@@ -661,7 +661,43 @@ $('mbAnalyze').onclick = startAnalysis;
 $('mbStop').onclick = stopAnalysis;
 $('mbReview').onclick = () => { setView(0); if (!analyzedAll()) startAnalysis(); };
 $('mbShare').onclick = () => $('shareBtn').click();
-$('mbNew').onclick = $('mbNew2').onclick = () => newGame();
+$('mbNew').onclick = $('mbNew2').onclick = () => openNewDialog();
+
+// ---------- 새 대국 설정 화면 (휴대폰) ----------
+// 큰 버튼으로 실력·진영을 고르고 '대국 시작'. 고른 값은 시작할 때만 적용되고, 취소하면 그대로
+const ng = { level: 2, side: 'cho' };
+let ngReturnFocus = null;
+function paintNewDialog() {
+  document.querySelectorAll('#ngLevel button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.level === ng.level)));
+  document.querySelectorAll('#ngSide button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === ng.side)));
+}
+function openNewDialog() {
+  ng.level = st.level; ng.side = chosenSide;
+  $('ngMy').value = $('mySetup').value; $('ngEng').value = $('engSetup').value;
+  $('ngWarn').hidden = !(st.moves.length && !st.over && !st.shared); // 두던 대국이 있을 때만 경고
+  paintNewDialog();
+  ngReturnFocus = document.activeElement;
+  $('newDialog').hidden = false;
+  document.body.classList.add('modal-open');
+  $('ngStart').focus();
+}
+function closeNewDialog() {
+  $('newDialog').hidden = true;
+  document.body.classList.remove('modal-open');
+  if (ngReturnFocus && ngReturnFocus.focus) ngReturnFocus.focus();
+}
+const newDialogOpen = () => !$('newDialog').hidden;
+document.querySelectorAll('#ngLevel button').forEach((b) => { b.onclick = () => { ng.level = +b.dataset.level; paintNewDialog(); }; });
+document.querySelectorAll('#ngSide button').forEach((b) => { b.onclick = () => { ng.side = b.dataset.side; paintNewDialog(); }; });
+$('ngCancel').onclick = closeNewDialog;
+$('ngStart').onclick = () => {
+  setLevel(ng.level); setSide(ng.side);
+  $('mySetup').value = $('ngMy').value; $('engSetup').value = $('ngEng').value;
+  closeNewDialog();
+  newGame();
+  window.scrollTo(0, 0);
+};
+$('newDialog').addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { ev.stopPropagation(); closeNewDialog(); } });
 
 // ---------- 입력 ----------
 svg.addEventListener('click', (ev) => {
@@ -709,7 +745,7 @@ $('resultReview').onclick = () => { resultDismissed = true; setView(0); renderPa
 
 // 방향키로 복기: ← → 한 수, Home/End 처음·최신 (입력칸에 있을 때는 제외)
 document.addEventListener('keydown', (ev) => {
-  if (!board || ev.altKey || ev.ctrlKey || ev.metaKey || /^(INPUT|SELECT|TEXTAREA)$/.test(ev.target.tagName)) return;
+  if (!board || newDialogOpen() || ev.altKey || ev.ctrlKey || ev.metaKey || /^(INPUT|SELECT|TEXTAREA)$/.test(ev.target.tagName)) return;
   const n = shownCount();
   const to = { ArrowLeft: n - 1, ArrowRight: n + 1, Home: 0, End: null }[ev.key];
   if (to === undefined) return;
@@ -736,6 +772,7 @@ document.querySelectorAll('#levelSeg button').forEach((b) => { b.onclick = () =>
 
 const fillSetup = (id, withRandom) => { $(id).innerHTML = SETUPS.map((v) => `<option>${v}</option>`).join('') + (withRandom ? '<option>무작위</option>' : ''); };
 fillSetup('mySetup', false); fillSetup('engSetup', true);
+fillSetup('ngMy', false); fillSetup('ngEng', true);
 
 function newGame() {
   leaveShared();

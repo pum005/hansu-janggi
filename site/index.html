@@ -171,6 +171,38 @@
   </aside>
 </main>
 
+<!-- 새 대국 설정 (휴대폰에서 '새 대국'을 누르면 화면 전체로 열림) -->
+<div class="ng" id="newDialog" role="dialog" aria-modal="true" aria-labelledby="ngTitle" hidden>
+  <div class="ng-box">
+    <h2 id="ngTitle">새 대국</h2>
+    <p class="ng-warn" id="ngWarn">지금 두던 대국은 끝나고 새로 시작합니다.</p>
+    <div class="ng-label">AI 실력</div>
+    <div class="ng-grid" id="ngLevel">
+      <button data-level="0"><b>입문</b><span>처음 배우는 분</span></button>
+      <button data-level="1"><b>중수</b><span>규칙을 아는 분</span></button>
+      <button data-level="2"><b>고수</b><span>장기 좀 두는 분</span></button>
+      <button data-level="3"><b>최강</b><span>있는 힘껏 둠</span></button>
+    </div>
+    <div class="ng-label">내 진영</div>
+    <div class="ng-grid" id="ngSide">
+      <button data-side="cho"><b><span class="chip cho">楚</span>초</b><span>먼저 둠</span></button>
+      <button data-side="han"><b><span class="chip han">漢</span>한</b><span>나중에 둠</span></button>
+    </div>
+    <details class="ng-more">
+      <summary>상차림 바꾸기</summary>
+      <div class="two">
+        <div><label class="field-label" for="ngMy">내 상차림</label><div class="select"><select id="ngMy"></select></div></div>
+        <div><label class="field-label" for="ngEng">AI 상차림</label><div class="select"><select id="ngEng"></select></div></div>
+      </div>
+    </details>
+    <div class="ng-actions">
+      <button class="btn" id="ngCancel">취소</button>
+      <button class="btn primary" id="ngStart">대국 시작</button>
+    </div>
+  </div>
+</div>
+
+
 <footer class="site-footer">
   <span>© 2026 한수 장기 · <a href="/engine/">Fairy-Stockfish 엔진</a> 사용 (GPL-3.0)</span>
   <nav><a href="/privacy/">개인정보처리방침</a><a href="/source/">소스 공개</a></nav>

@@ -245,3 +245,28 @@
   .mb-progress span { display: block; height: 100%; width: 0; background: var(--blue); transition: width .2s; }
   .mbar [data-for="analyze"] .btn { padding: 0 22px; }
 }
+
+/* ---------- 새 대국 설정 (휴대폰 전체 화면) ---------- */
+.ng { position: fixed; inset: 0; z-index: 50; background: var(--bg); overflow-y: auto; overscroll-behavior: contain; }
+.ng[hidden] { display: none; }
+.ng-box { max-width: 480px; margin: 0 auto; padding: 22px 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; min-height: 100%; }
+.ng h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
+.ng-warn { font-size: 15px; color: var(--han); font-weight: 600; margin: 0 0 6px; }
+.ng-warn[hidden] { display: none; }
+.ng-label { font-size: 15px; font-weight: 700; color: #4a4a4f; margin: 18px 0 8px; }
+.ng-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ng-grid button {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+  min-height: 72px; padding: 12px 14px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); color: var(--ink);
+}
+.ng-grid button b { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; align-self: stretch; }
+.ng-grid button > span { font-size: 14px; color: var(--sub); }
+.ng-grid button[aria-pressed="true"] { border-color: var(--ink); background: #fff; box-shadow: 0 0 0 1px var(--ink); }
+.ng-grid button[aria-pressed="true"] b::after { content: '✓'; margin-left: auto; font-size: 16px; }
+.ng-grid .chip { width: 26px; height: 26px; font-size: 14px; }
+.ng-more { margin-top: 18px; font-size: 15px; }
+.ng-more summary { cursor: pointer; color: var(--sub); font-weight: 600; padding: 6px 0; }
+.ng-more .two { margin-top: 8px; }
+.ng-actions { margin-top: auto; padding-top: 24px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.ng-actions .btn { height: 60px; font-size: 18px; font-weight: 800; border-radius: 14px; }
+body.modal-open { overflow: hidden; }
