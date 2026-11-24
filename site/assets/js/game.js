@@ -288,6 +288,10 @@ function renderPanel() {
   else if (ready && !st.over && board.isBikjang()) sub = '<span class="alert">빅장</span> 궁끼리 마주 보고 있습니다';
   $('statusText').textContent = status;
   $('subText').innerHTML = sub;
+  $('mbStatus').textContent = status;
+  $('mbSub').innerHTML = sub;
+  // 상태 앞 점: 지금 둘 차례인 진영 색 (대국이 끝났거나 보기만 할 때는 회색)
+  $('mbDot').className = 'mb-dot' + (ready && !st.over && !browsing ? ' ' + stm : '');
 
   // 그 국면의 분석 값이 있으면 그것을, 아니면 마지막으로 엔진이 읽은 값을 보여 줌
   const anEval = st.thinking !== 'hint' && st.thinking !== 'engine' ? st.an.evals[shownCount()] : null;
@@ -334,6 +338,7 @@ function renderPanel() {
   $('navPos').classList.toggle('on', reviewing());
 
   renderAnalysis();
+  renderMobileBar(browsing);
 
   // 결과 창
   const res = $('result');
@@ -621,6 +626,79 @@ function judgeText(j, v) {
   finally { b.delete(); }
 }
 
+// ---------- 휴대폰 하단 버튼 ----------
+// 상황(대국 중 / 복기 중 / 대국 끝 / 분석 중)에 맞는 버튼 줄만 보여 줌
+function renderMobileBar(browsing) {
+  const bar = $('mbar');
+  const mode = st.thinking === 'analyze' ? 'analyze' : browsing ? 'review' : st.over ? 'over' : 'play';
+  bar.dataset.mode = mode;
+  const n = shownCount();
+  $('mbHint').disabled = $('hintBtn').disabled;
+  $('mbUndo').disabled = $('mbUndo2').disabled = $('undoBtn').disabled;
+  $('mbPass').disabled = $('passBtn').disabled;
+  $('mbNew').disabled = $('mbNew2').disabled = $('newBtn').disabled;
+  $('mbBack').disabled = !board || !st.moves.length || !!st.thinking;
+  $('mbPrev').disabled = n === 0;
+  $('mbNext').disabled = !reviewing();
+  $('mbHint2').disabled = $('hintBtn').disabled;
+  const canAnalyze = !analyzedAll() && st.moves.length > 0;
+  $('mbAnalyze').hidden = !canAnalyze;
+  $('mbAnalyze').disabled = !engineReady || !!st.thinking;
+  $('mbAnalyze').parentElement.classList.toggle('no-an', !canAnalyze);
+  $('mbExit').textContent = st.shared ? '내 대국으로' : '복기 끝내기';
+  $('mbReview').disabled = !st.moves.length;
+  $('mbShare').disabled = $('shareBtn').disabled;
+  if (mode === 'analyze') $('mbFill').style.width = (anTotal ? (100 * anDone / anTotal) : 0).toFixed(1) + '%';
+}
+$('mbHint').onclick = $('mbHint2').onclick = () => $('hintBtn').click();
+$('mbUndo').onclick = $('mbUndo2').onclick = () => $('undoBtn').click();
+$('mbPass').onclick = () => $('passBtn').click();
+$('mbBack').onclick = () => setView(shownCount() - 1);
+$('mbPrev').onclick = () => setView(shownCount() - 1);
+$('mbNext').onclick = () => setView(shownCount() + 1);
+$('mbExit').onclick = () => (st.shared ? $('sharedExit').click() : setView(null));
+$('mbAnalyze').onclick = startAnalysis;
+$('mbStop').onclick = stopAnalysis;
+$('mbReview').onclick = () => { setView(0); if (!analyzedAll()) startAnalysis(); };
+$('mbShare').onclick = () => $('shareBtn').click();
+$('mbNew').onclick = $('mbNew2').onclick = () => openNewDialog();
+
+// ---------- 새 대국 설정 화면 (휴대폰) ----------
+// 큰 버튼으로 실력·진영을 고르고 '대국 시작'. 고른 값은 시작할 때만 적용되고, 취소하면 그대로
+const ng = { level: 2, side: 'cho' };
+let ngReturnFocus = null;
+function paintNewDialog() {
+  document.querySelectorAll('#ngLevel button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.level === ng.level)));
+  document.querySelectorAll('#ngSide button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === ng.side)));
+}
+function openNewDialog() {
+  ng.level = st.level; ng.side = chosenSide;
+  $('ngMy').value = $('mySetup').value; $('ngEng').value = $('engSetup').value;
+  $('ngWarn').hidden = !(st.moves.length && !st.over && !st.shared); // 두던 대국이 있을 때만 경고
+  paintNewDialog();
+  ngReturnFocus = document.activeElement;
+  $('newDialog').hidden = false;
+  document.body.classList.add('modal-open');
+  $('ngStart').focus();
+}
+function closeNewDialog() {
+  $('newDialog').hidden = true;
+  document.body.classList.remove('modal-open');
+  if (ngReturnFocus && ngReturnFocus.focus) ngReturnFocus.focus();
+}
+const newDialogOpen = () => !$('newDialog').hidden;
+document.querySelectorAll('#ngLevel button').forEach((b) => { b.onclick = () => { ng.level = +b.dataset.level; paintNewDialog(); }; });
+document.querySelectorAll('#ngSide button').forEach((b) => { b.onclick = () => { ng.side = b.dataset.side; paintNewDialog(); }; });
+$('ngCancel').onclick = closeNewDialog;
+$('ngStart').onclick = () => {
+  setLevel(ng.level); setSide(ng.side);
+  $('mySetup').value = $('ngMy').value; $('engSetup').value = $('ngEng').value;
+  closeNewDialog();
+  newGame();
+  window.scrollTo(0, 0);
+};
+$('newDialog').addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { ev.stopPropagation(); closeNewDialog(); } });
+
 // ---------- 입력 ----------
 svg.addEventListener('click', (ev) => {
   if (!engineReady || st.shared || reviewing() || st.over || st.thinking || sideToMove() !== st.side) return;
@@ -667,7 +745,7 @@ $('resultReview').onclick = () => { resultDismissed = true; setView(0); renderPa
 
 // 방향키로 복기: ← → 한 수, Home/End 처음·최신 (입력칸에 있을 때는 제외)
 document.addEventListener('keydown', (ev) => {
-  if (!board || ev.altKey || ev.ctrlKey || ev.metaKey || /^(INPUT|SELECT|TEXTAREA)$/.test(ev.target.tagName)) return;
+  if (!board || newDialogOpen() || ev.altKey || ev.ctrlKey || ev.metaKey || /^(INPUT|SELECT|TEXTAREA)$/.test(ev.target.tagName)) return;
   const n = shownCount();
   const to = { ArrowLeft: n - 1, ArrowRight: n + 1, Home: 0, End: null }[ev.key];
   if (to === undefined) return;
@@ -694,6 +772,7 @@ document.querySelectorAll('#levelSeg button').forEach((b) => { b.onclick = () =>
 
 const fillSetup = (id, withRandom) => { $(id).innerHTML = SETUPS.map((v) => `<option>${v}</option>`).join('') + (withRandom ? '<option>무작위</option>' : ''); };
 fillSetup('mySetup', false); fillSetup('engSetup', true);
+fillSetup('ngMy', false); fillSetup('ngEng', true);
 
 function newGame() {
   leaveShared();
@@ -776,8 +855,9 @@ $('shareBtn').onclick = async () => {
   const btn = $('shareBtn');
   const done = (text) => {
     btn.textContent = text; btn.classList.add('done');
+    $('mbShare').textContent = '링크를 복사했습니다 ✓';
     clearTimeout(shareTimer);
-    shareTimer = setTimeout(() => { btn.textContent = '기보 공유'; btn.classList.remove('done'); }, 2000);
+    shareTimer = setTimeout(() => { btn.textContent = '기보 공유'; btn.classList.remove('done'); $('mbShare').textContent = '기보 보내기 (카톡 등)'; }, 2000);
   };
   if (navigator.share && matchMedia('(pointer: coarse)').matches) {
     try { await navigator.share({ title: '한수 장기 기보', url }); return; }
