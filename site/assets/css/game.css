@@ -126,6 +126,7 @@
 #evalText.cho { color: var(--cho); } #evalText.han { color: var(--han); }
 
 .moves {
+  position: relative; /* 안쪽 수의 offsetTop을 이 목록 기준으로 재기 위해 */
   display: grid; grid-template-columns: 28px 1fr 1fr; row-gap: 2px; font-size: 13.5px;
   max-height: 228px; overflow-y: auto; font-variant-numeric: tabular-nums; overscroll-behavior: contain;
 }
