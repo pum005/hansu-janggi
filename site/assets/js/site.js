@@ -40,6 +40,24 @@ const ADS = {
   });
 })();
 
+// 글씨 크게: <html class="big-text">. 머리말의 인라인 스크립트가 먼저 켜 두므로 깜빡임 없음
+(() => {
+  const KEY = 'hansu-janggi:bigtext';
+  const btn = document.getElementById('textBtn');
+  let on = document.documentElement.classList.contains('big-text');
+  const apply = () => {
+    document.documentElement.classList.toggle('big-text', on);
+    if (btn) btn.setAttribute('aria-pressed', String(on));
+    window.dispatchEvent(new Event('resize')); // 그래프 등 크기 다시 계산
+  };
+  apply();
+  if (btn) btn.addEventListener('click', () => {
+    on = !on;
+    try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) { /* 저장 못 해도 이번 화면에는 적용 */ }
+    apply();
+  });
+})();
+
 // 광고
 (() => {
   const adsenseSrc = () => `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADS.adsense.client}`;

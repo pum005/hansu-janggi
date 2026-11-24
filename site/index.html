@@ -21,12 +21,16 @@
 <link rel="stylesheet" href="/assets/css/site.css">
 <link rel="stylesheet" href="/assets/css/game.css">
 <link rel="modulepreload" href="/assets/engine/v1/ffish.js">
+<script>try{if(localStorage.getItem('hansu-janggi:bigtext')==='1')document.documentElement.classList.add('big-text')}catch(e){}</script>
 <script src="/assets/js/site.js" defer></script>
 <script src="/assets/js/game.js" type="module"></script>
 </head>
 <body>
 <header class="site-header">
   <a class="logo" href="/"><span class="logo-mark">將</span>한수 장기</a>
+  <div class="hd-tools">
+    <button class="tool" id="textBtn" aria-pressed="false"><span class="tool-ic" aria-hidden="true">가</span>글씨 크게</button>
+  </div>
   <button class="menu-btn" aria-label="메뉴" aria-expanded="false"><span></span><span></span><span></span></button>
   <nav class="nav" aria-label="주 메뉴">
     <a href="/" aria-current="page">대국</a>
