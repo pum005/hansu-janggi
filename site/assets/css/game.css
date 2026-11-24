@@ -86,6 +86,8 @@
 .result-box p { margin: 6px 0 18px; color: var(--sub); font-size: 14px; }
 .result-box .row { display: flex; gap: 8px; }
 .result-box .btn { flex: 1; }
+.result-box .links { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
+.result-box .links .close { margin-top: 0; }
 .result-box .close { margin-top: 10px; border: 0; background: none; color: var(--sub); font-size: 13px; padding: 4px 8px; }
 
 /* ---------- 패널 ---------- */
@@ -120,6 +122,21 @@
 .moves .last { background: #fbeceb; color: var(--han); font-weight: 700; }
 .moves .last.c { background: #e8f3ee; color: var(--cho); }
 .moves .empty { grid-column: 1 / -1; color: var(--sub); padding: 6px 2px; }
+.moves .m[data-i] { cursor: pointer; }
+.moves .m[data-i]:hover:not(.last) { background: var(--soft); }
+.moves.reviewing .last { box-shadow: inset 0 0 0 1.5px currentColor; }
+
+/* 복기 이동 */
+.replay { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--soft); }
+.rbtn {
+  width: 40px; height: 34px; flex: none; display: grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink);
+}
+.rbtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rbtn:hover:not(:disabled) { border-color: #cfcac0; }
+.rbtn:disabled { opacity: .35; cursor: default; }
+.rpos { flex: 1; text-align: center; font-size: 13px; color: var(--sub); font-variant-numeric: tabular-nums; }
+.rpos.on { color: var(--blue); font-weight: 700; }
 
 /* 광고 자리: 늦게 떠도 화면이 밀리지 않게 높이를 미리 잡음 */
 .game-ad.on { min-height: 250px; }

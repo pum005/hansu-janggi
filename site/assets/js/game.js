@@ -24,11 +24,13 @@ const $ = (id) => document.getElementById(id);
 const svg = $('board');
 
 let ff = null, board = null, worker = null, engineReady = false;
+let viewBoard = null; // 복기 중에 보여 줄 판 (진행 중인 판 board와 따로 둠)
 let reqId = 0, pending = null, resultDismissed = false;
 const st = {
   side: 'cho', level: 2, mySetup: '마상상마', engSetup: '마상상마',
   startFen: '', moves: [], notes: [],
   selected: null, hint: null, evalCho: 0, evalText: '0.0', depth: '', thinking: null, over: null,
+  view: null, // 복기 중이면 보고 있는 수 번호(0 = 첫 배치), 아니면 null
 };
 
 // ---------- 좌표 ----------
@@ -68,6 +70,7 @@ function buildStartFen() {
 
 // ---------- 판 상태 ----------
 function rebuild() {
+  clearView();
   if (board) board.delete();
   board = new ff.Board('janggi', st.startFen);
   st.notes = [];
@@ -82,9 +85,9 @@ function noteFor(m) {
   if (r[1] === 'P' && !board.turn()) name = '병';
   return `${r[2]}${name}${r[3]}`;
 }
-function pieceGrid() {
+function pieceGrid(b = board) {
   const out = [];
-  board.fen().split(' ')[0].split('/').forEach((row, i) => {
+  b.fen().split(' ')[0].split('/').forEach((row, i) => {
     const r = 10 - i; let f = 0;
     for (const ch of row) {
       if (/\d/.test(ch)) f += +ch;
@@ -96,6 +99,29 @@ function pieceGrid() {
 const legalList = () => board.legalMoves().split(' ').filter(Boolean);
 const legalFrom = (f, r) => legalList().filter((m) => { const p = parseMove(m); return p && p.ff === f && p.fr === r && !isPass(p); });
 const passMove = () => legalList().find((m) => isPass(parseMove(m))) || null;
+
+// ---------- 화면에 보이는 판 ----------
+// 복기 중이면 st.view 수까지 둔 판, 아니면 진행 중인 판
+const reviewing = () => st.view !== null;
+const shownBoard = () => (reviewing() ? viewBoard : board);
+const shownCount = () => (reviewing() ? st.view : st.moves.length);
+function clearView() {
+  if (viewBoard) { viewBoard.delete(); viewBoard = null; }
+  st.view = null;
+}
+function setView(n) {
+  if (n === null || n >= st.moves.length) n = null;
+  else n = Math.max(0, n);
+  if (n === st.view) return;
+  clearView();
+  st.view = n;
+  if (n !== null) {
+    viewBoard = new ff.Board('janggi', st.startFen);
+    for (const m of st.moves.slice(0, n)) viewBoard.push(m);
+  }
+  st.selected = null; st.hint = null;
+  render();
+}
 
 // ---------- 그리기 ----------
 function el(tag, attrs, parent) {
@@ -131,9 +157,10 @@ function drawStatic() {
 function render() {
   const pl = $('pieceLayer'), ml = $('markLayer'), ul = $('underLayer');
   pl.innerHTML = ''; ml.innerHTML = ''; ul.innerHTML = '';
+  const b = shownBoard();
 
   // 직전 수: 출발점 점, 도착점 모서리 표시
-  const last = st.moves[st.moves.length - 1];
+  const last = st.moves[shownCount() - 1];
   if (last) {
     const p = parseMove(last);
     const [x1, y1] = toXY(p.ff, p.fr), [x2, y2] = toXY(p.tf, p.tr);
@@ -162,9 +189,9 @@ function render() {
     }
   }
 
-  const grid = pieceGrid();
-  const inCheck = board.isCheck();
-  const stm = sideToMove();
+  const grid = pieceGrid(b);
+  const inCheck = b.isCheck();
+  const stm = b.turn() ? 'cho' : 'han';
   for (const p of grid) {
     const [x, y] = toXY(p.f, p.r);
     const R = SIZE[p.t];
@@ -190,9 +217,9 @@ function render() {
   renderPanel();
 }
 
-function material() {
+function material(b = board) {
   const sum = { cho: 0, han: 1.5 }; // 한 덤 1.5점
-  for (const p of pieceGrid()) sum[p.side] += POINTS[p.t];
+  for (const p of pieceGrid(b)) sum[p.side] += POINTS[p.t];
   return sum;
 }
 
@@ -222,8 +249,13 @@ function renderPanel() {
   else if (st.over) { status = st.over.title; sub = st.over.text; }
   else if (st.thinking === 'engine') { status = '상대가 수를 읽는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
   else if (st.thinking === 'hint') { status = '훈수를 찾는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
+  else if (reviewing()) {
+    status = st.view === 0 ? '복기 · 첫 배치' : `복기 · ${st.view}수째 ${st.notes[st.view - 1]}`;
+    sub = st.over ? '◀ ▶ 버튼으로 한 수씩 넘겨 보세요' : '맨 끝(▶|)으로 가면 이어서 둘 수 있습니다';
+  }
   else { status = myTurn ? '내 차례' : '상대 차례'; sub = st.selected ? '움직일 곳을 누르세요' : '내 기물을 눌러 움직일 곳을 고르세요'; }
-  if (ready && !st.over && board.isCheck()) sub = `<span class="alert">장군!</span> ${stm === st.side ? '궁을 지켜야 합니다' : ''}`;
+  if (reviewing() || st.thinking) { /* 복기·생각 중에는 위 문구를 그대로 */ }
+  else if (ready && !st.over && board.isCheck()) sub = `<span class="alert">장군!</span> ${stm === st.side ? '궁을 지켜야 합니다' : ''}`;
   else if (ready && !st.over && board.isBikjang()) sub = '<span class="alert">빅장</span> 궁끼리 마주 보고 있습니다';
   $('statusText').textContent = status;
   $('subText').innerHTML = sub;
@@ -233,27 +265,39 @@ function renderPanel() {
   const et = $('evalText');
   et.textContent = st.evalText;
   et.className = st.evalCho > 0 ? 'cho' : st.evalCho < 0 ? 'han' : '';
-  if (board) { const m = material(); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
+  if (board) { const m = material(shownBoard()); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
 
   // 버튼
-  $('hintBtn').disabled = !myTurn;
-  $('passBtn').disabled = !myTurn || !passMove();
+  $('hintBtn').disabled = reviewing() ? !ready || !!st.thinking || shownBoard().isGameOver(false) : !myTurn;
+  $('passBtn').disabled = !myTurn || reviewing() || !passMove();
   $('undoBtn').disabled = !engineReady || st.thinking === 'hint' || !st.moves.some((_, i) => movedBy(i) === st.side);
   $('newBtn').disabled = !ff;
 
   // 수순
   const list = $('moveList');
+  list.classList.toggle('reviewing', reviewing());
   if (!st.notes.length) list.innerHTML = '<span class="empty">아직 둔 수가 없습니다</span>';
   else {
     let html = '';
-    const lastI = st.notes.length - 1;
-    for (let i = 0; i < st.notes.length; i += 2) {
-      const cls = (j, side) => `m ${side}` + (j === lastI ? ` last${side === 'c' ? ' c' : ''}` : '');
-      html += `<span class="n">${i / 2 + 1}</span><span class="${cls(i, 'c')}">${st.notes[i]}</span><span class="${cls(i + 1, 'h')}">${st.notes[i + 1] || ''}</span>`;
-    }
+    const curI = shownCount() - 1; // 지금 판에 보이는 마지막 수
+    const cell = (j, side) => {
+      if (j >= st.notes.length) return `<span class="m ${side}"></span>`;
+      const cls = `m ${side}` + (j === curI ? ` last${side === 'c' ? ' c' : ''}` : '');
+      return `<span class="${cls}" data-i="${j}">${st.notes[j]}</span>`;
+    };
+    for (let i = 0; i < st.notes.length; i += 2) html += `<span class="n">${i / 2 + 1}</span>${cell(i, 'c')}${cell(i + 1, 'h')}`;
     list.innerHTML = html;
-    list.scrollTop = list.scrollHeight;
+    const cur = list.querySelector('.last');
+    if (!reviewing() || !cur) list.scrollTop = list.scrollHeight;
+    else if (cur.offsetTop < list.scrollTop || cur.offsetTop + cur.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = cur.offsetTop - list.clientHeight / 2;
   }
+
+  // 복기 이동
+  const n = shownCount(), total = st.moves.length;
+  $('navFirst').disabled = $('navPrev').disabled = !board || n === 0;
+  $('navNext').disabled = $('navLast').disabled = !reviewing();
+  $('navPos').textContent = `${n} / ${total}`;
+  $('navPos').classList.toggle('on', reviewing());
 
   // 결과 창
   const res = $('result');
@@ -279,6 +323,7 @@ function checkOver() {
   return true;
 }
 function play(m) {
+  clearView(); // 새 수가 두어지면 복기를 끝내고 최신 판으로 돌아옴
   st.notes.push(noteFor(m));
   board.push(m);
   st.moves.push(m);
@@ -291,13 +336,16 @@ function play(m) {
 function askEngine(kind) {
   const lv = LEVELS[st.level];
   const full = kind === 'hint';
+  // 훈수는 화면에 보이는 국면(복기 중이면 그 수)에서 찾음
+  const moves = full ? st.moves.slice(0, shownCount()) : st.moves;
+  const rootBoard = full ? shownBoard() : board;
   st.thinking = kind; st.depth = '';
   const id = ++reqId;
-  pending = { id, kind, rootSide: sideToMove() };
+  pending = { id, kind, rootSide: rootBoard.turn() ? 'cho' : 'han', at: moves.length };
   worker.postMessage({ type: 'go', id, commands: [
     'setoption name UCI_Variant value janggi',
     `setoption name Skill Level value ${full ? 20 : lv.skill}`,
-    `position fen ${st.startFen}${st.moves.length ? ' moves ' + st.moves.join(' ') : ''}`,
+    `position fen ${st.startFen}${moves.length ? ' moves ' + moves.join(' ') : ''}`,
     `go movetime ${full ? 1500 : lv.ms}`,
   ] });
   render();
@@ -320,11 +368,11 @@ function onWorker(ev) {
   if (msg.type === 'info') { applyInfo(msg.line, pending.rootSide); renderPanel(); return; }
   if (msg.type === 'error') { st.thinking = null; pending = null; render(); $('subText').textContent = '엔진 오류: ' + msg.message; return; }
   if (msg.type === 'bestmove') {
-    const kind = pending.kind; pending = null; st.thinking = null;
-    if (msg.info) applyInfo(msg.info, sideToMove());
+    const { kind, rootSide, at } = pending; pending = null; st.thinking = null;
+    if (msg.info) applyInfo(msg.info, rootSide);
     if (!msg.move || msg.move === '(none)') { checkOver(); render(); return; }
     if (kind === 'engine') play(msg.move);
-    else { st.hint = msg.move; render(); }
+    else { st.hint = at === shownCount() ? msg.move : null; render(); }
   }
 }
 function startWorker() {
@@ -340,7 +388,7 @@ function interruptEngine() { if (st.thinking || pending) startWorker(); }
 
 // ---------- 입력 ----------
 svg.addEventListener('click', (ev) => {
-  if (!engineReady || st.over || st.thinking || sideToMove() !== st.side) return;
+  if (!engineReady || reviewing() || st.over || st.thinking || sideToMove() !== st.side) return;
   const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
   const p = pt.matrixTransform(svg.getScreenCTM().inverse());
   const at = fromXY(p.x, p.y);
@@ -353,6 +401,14 @@ svg.addEventListener('click', (ev) => {
   }
   st.selected = here && here.side === st.side ? { f: at.f, r: at.r, t: here.t, moves: legalFrom(at.f, at.r) } : null;
   render();
+});
+$('navFirst').onclick = () => setView(0);
+$('navPrev').onclick = () => setView(shownCount() - 1);
+$('navNext').onclick = () => setView(shownCount() + 1);
+$('navLast').onclick = () => setView(null);
+$('moveList').addEventListener('click', (ev) => {
+  const m = ev.target.closest('[data-i]');
+  if (m) setView(+m.dataset.i + 1);
 });
 $('hintBtn').onclick = () => { st.selected = null; askEngine('hint'); };
 $('passBtn').onclick = () => { const m = passMove(); if (m) play(m); };
@@ -371,6 +427,17 @@ $('resultUndo').onclick = undo;
 $('newBtn').onclick = () => newGame();
 $('resultNew').onclick = () => newGame();
 $('resultClose').onclick = () => { resultDismissed = true; renderPanel(); };
+$('resultReview').onclick = () => { resultDismissed = true; setView(0); };
+
+// 방향키로 복기: ← → 한 수, Home/End 처음·최신 (입력칸에 있을 때는 제외)
+document.addEventListener('keydown', (ev) => {
+  if (!board || ev.altKey || ev.ctrlKey || ev.metaKey || /^(INPUT|SELECT|TEXTAREA)$/.test(ev.target.tagName)) return;
+  const n = shownCount();
+  const to = { ArrowLeft: n - 1, ArrowRight: n + 1, Home: 0, End: null }[ev.key];
+  if (to === undefined) return;
+  ev.preventDefault();
+  setView(to);
+});
 
 // 설정
 let chosenSide = 'cho';
