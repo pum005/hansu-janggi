@@ -15,7 +15,7 @@ const LEVELS = [
 ];
 const HANJA = { cho: { k: '楚', r: '車', c: '包', n: '馬', b: '象', a: '士', p: '卒' },
                 han: { k: '漢', r: '車', c: '包', n: '馬', b: '象', a: '士', p: '兵' } };
-const SIZE = { k: 46, r: 40, c: 40, n: 40, b: 40, a: 32, p: 32 };
+const SIZE = { k: 50, r: 44, c: 44, n: 44, b: 44, a: 36, p: 36 }; // 칸 간격 100 기준 반지름
 const POINTS = { r: 13, c: 7, n: 5, b: 3, a: 3, p: 2, k: 0 };
 const KO_NAME = { K: '궁', A: '사', R: '차', C: '포', H: '마', E: '상', P: '졸' };
 const NS = 'http://www.w3.org/2000/svg';
@@ -215,7 +215,8 @@ function render() {
     const g = el('g', { class: `piece ${p.side}` }, pl);
     el('polygon', { class: 'octa', points: octagon(x, y, R), filter: 'url(#pshadow)' }, g);
     el('polygon', { class: 'inner', points: octagon(x, y, R - 6) }, g);
-    const t = el('text', { x, y: y + 1, 'font-size': Math.round(R * 1.08) }, g);
+    // 작은 기물(사·졸)은 글자 비율을 조금 키워 휴대폰에서도 잘 읽히게
+    const t = el('text', { x, y: y + 1, 'font-size': Math.round(R * (R < 40 ? 1.12 : 1.04)) }, g);
     t.textContent = HANJA[p.side][p.t];
     if (inCheck && p.t === 'k' && p.side === stm) el('polygon', { class: 'check-ring', points: octagon(x, y, R + 9) }, ml);
   }
