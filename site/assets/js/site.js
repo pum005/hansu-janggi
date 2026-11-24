@@ -37,6 +37,8 @@ const ADS = {
   btn.addEventListener('click', () => {
     const open = document.body.classList.toggle('menu-open');
     btn.setAttribute('aria-expanded', String(open));
+    const tx = btn.querySelector('.menu-tx');
+    if (tx) tx.textContent = open ? '닫기' : '메뉴';
   });
 })();
 
