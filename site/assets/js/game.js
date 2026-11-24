@@ -153,6 +153,7 @@ function octagon(cx, cy, R) {
 function drawStatic() {
   svg.innerHTML = `<defs>
     <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8bf78"/><stop offset="1" stop-color="#d6a258"/></linearGradient>
+    <radialGradient id="pface" cx=".42" cy=".36" r=".8"><stop offset="0" stop-color="#fffdf7"/><stop offset=".75" stop-color="#f8f1e1"/><stop offset="1" stop-color="#efe3c8"/></radialGradient>
     <filter id="pshadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#5a4220" flood-opacity=".28"/></filter>
   </defs>`;
   el('rect', { x: -30, y: -30, width: 960, height: 1060, rx: 26, fill: 'url(#wood)' }, svg);
