@@ -634,7 +634,7 @@ function renderMobileBar(browsing) {
   bar.dataset.mode = mode;
   const n = shownCount();
   $('mbHint').disabled = $('hintBtn').disabled;
-  $('mbUndo').disabled = $('undoBtn').disabled;
+  $('mbUndo').disabled = $('mbUndo2').disabled = $('undoBtn').disabled;
   $('mbPass').disabled = $('passBtn').disabled;
   $('mbNew').disabled = $('mbNew2').disabled = $('newBtn').disabled;
   $('mbBack').disabled = !board || !st.moves.length || !!st.thinking;
@@ -651,7 +651,7 @@ function renderMobileBar(browsing) {
   if (mode === 'analyze') $('mbFill').style.width = (anTotal ? (100 * anDone / anTotal) : 0).toFixed(1) + '%';
 }
 $('mbHint').onclick = $('mbHint2').onclick = () => $('hintBtn').click();
-$('mbUndo').onclick = () => $('undoBtn').click();
+$('mbUndo').onclick = $('mbUndo2').onclick = () => $('undoBtn').click();
 $('mbPass').onclick = () => $('passBtn').click();
 $('mbBack').onclick = () => setView(shownCount() - 1);
 $('mbPrev').onclick = () => setView(shownCount() - 1);
