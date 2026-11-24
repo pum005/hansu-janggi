@@ -31,6 +31,7 @@ const st = {
   startFen: '', moves: [], notes: [],
   selected: null, hint: null, evalCho: 0, evalText: '0.0', depth: '', thinking: null, over: null,
   view: null, // 복기 중이면 보고 있는 수 번호(0 = 첫 배치), 아니면 null
+  shared: false, // 공유 링크로 연 기보를 보는 중이면 true (두기·저장 안 함)
 };
 
 // ---------- 좌표 ----------
@@ -233,7 +234,8 @@ function material(b = board) {
 function renderPanel() {
   const ready = engineReady && board;
   const stm = board ? sideToMove() : 'cho';
-  const myTurn = ready && !st.over && !st.thinking && stm === st.side;
+  const myTurn = ready && !st.shared && !st.over && !st.thinking && stm === st.side;
+  const browsing = reviewing() || st.shared; // 판을 보기만 하는 중
   const lv = LEVELS[st.level];
 
   // 플레이어 줄
@@ -241,12 +243,14 @@ function renderPanel() {
   $('aiChip').className = `chip ${ai}`; $('aiChip').textContent = ai === 'cho' ? '楚' : '漢';
   $('meChip').className = `chip ${me}`; $('meChip').textContent = me === 'cho' ? '楚' : '漢';
   $('aiName').textContent = `AI · ${lv.name}`;
+  $('meName').textContent = st.shared ? '공유한 사람' : '나';
+  $('sharedBar').hidden = !st.shared;
   $('meSetup').textContent = st.mySetup === '무작위' ? '' : `상차림 · ${st.mySetup}`;
   const aiTurn = $('aiTurn'), meTurn = $('meTurn');
   aiTurn.className = `turn ${ai}` + (st.thinking === 'engine' ? ' thinking' : '');
   meTurn.className = `turn ${me}` + (st.thinking === 'hint' ? ' thinking' : '');
-  aiTurn.hidden = !(ready && !st.over && stm === ai);
-  meTurn.hidden = !(ready && !st.over && stm === me);
+  aiTurn.hidden = !(ready && !st.over && stm === ai && (!browsing || st.thinking === 'engine'));
+  meTurn.hidden = !(ready && !st.over && stm === me && !browsing);
   $('aiTurnText').textContent = st.thinking === 'engine' ? (st.depth ? `생각 중 · 깊이 ${st.depth}` : '생각 중') : '차례';
   $('meTurnText').textContent = st.thinking === 'hint' ? '훈수 찾는 중' : '내 차례';
 
@@ -258,10 +262,14 @@ function renderPanel() {
   else if (st.thinking === 'hint') { status = '훈수를 찾는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
   else if (reviewing()) {
     status = st.view === 0 ? '복기 · 첫 배치' : `복기 · ${st.view}수째 ${st.notes[st.view - 1]}`;
-    sub = st.over ? '◀ ▶ 버튼으로 한 수씩 넘겨 보세요' : '맨 끝(▶|)으로 가면 이어서 둘 수 있습니다';
+    sub = st.over || st.shared ? '◀ ▶ 버튼으로 한 수씩 넘겨 보세요' : '맨 끝(▶|)으로 가면 이어서 둘 수 있습니다';
+  }
+  else if (st.shared) {
+    status = st.over ? `공유받은 기보 · ${st.over.title === '무승부' ? '무승부' : (board.result(false) === '1-0' ? '초' : '한') + ' 승'}` : '공유받은 기보 · 진행 중';
+    sub = `전체 ${st.moves.length}수 · ◀ 버튼으로 처음부터 넘겨 보세요`;
   }
   else { status = myTurn ? '내 차례' : '상대 차례'; sub = st.selected ? '움직일 곳을 누르세요' : '내 기물을 눌러 움직일 곳을 고르세요'; }
-  if (reviewing() || st.thinking) { /* 복기·생각 중에는 위 문구를 그대로 */ }
+  if (browsing || st.thinking) { /* 복기·생각 중에는 위 문구를 그대로 */ }
   else if (ready && !st.over && board.isCheck()) sub = `<span class="alert">장군!</span> ${stm === st.side ? '궁을 지켜야 합니다' : ''}`;
   else if (ready && !st.over && board.isBikjang()) sub = '<span class="alert">빅장</span> 궁끼리 마주 보고 있습니다';
   $('statusText').textContent = status;
@@ -275,9 +283,9 @@ function renderPanel() {
   if (board) { const m = material(shownBoard()); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
 
   // 버튼
-  $('hintBtn').disabled = reviewing() ? !ready || !!st.thinking || shownBoard().isGameOver(false) : !myTurn;
+  $('hintBtn').disabled = browsing ? !ready || !!st.thinking || shownBoard().isGameOver(false) : !myTurn;
   $('passBtn').disabled = !myTurn || reviewing() || !passMove();
-  $('undoBtn').disabled = !engineReady || st.thinking === 'hint' || !st.moves.some((_, i) => movedBy(i) === st.side);
+  $('undoBtn').disabled = !engineReady || st.shared || st.thinking === 'hint' || !st.moves.some((_, i) => movedBy(i) === st.side);
   $('newBtn').disabled = !ff;
 
   // 수순
@@ -368,7 +376,7 @@ function onWorker(ev) {
   const msg = ev.data;
   if (msg.type === 'ready') {
     engineReady = true; render();
-    if (!st.over && sideToMove() !== st.side) askEngine('engine');
+    if (!st.shared && !st.over && sideToMove() !== st.side) askEngine('engine');
     return;
   }
   if (!pending || msg.id !== pending.id) return;
@@ -395,7 +403,7 @@ function interruptEngine() { if (st.thinking || pending) startWorker(); }
 
 // ---------- 입력 ----------
 svg.addEventListener('click', (ev) => {
-  if (!engineReady || reviewing() || st.over || st.thinking || sideToMove() !== st.side) return;
+  if (!engineReady || st.shared || reviewing() || st.over || st.thinking || sideToMove() !== st.side) return;
   const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
   const p = pt.matrixTransform(svg.getScreenCTM().inverse());
   const at = fromXY(p.x, p.y);
@@ -467,6 +475,7 @@ const fillSetup = (id, withRandom) => { $(id).innerHTML = SETUPS.map((v) => `<op
 fillSetup('mySetup', false); fillSetup('engSetup', true);
 
 function newGame() {
+  leaveShared();
   st.side = chosenSide;
   st.mySetup = $('mySetup').value;
   st.engSetup = $('engSetup').value;
@@ -478,8 +487,70 @@ function newGame() {
   if (engineReady && sideToMove() !== st.side) askEngine('engine');
 }
 
+// ---------- 기보 공유 링크 ----------
+// #g=1.<초 상차림><한 상차림><진영 c|h><실력>.<수순>
+// 수순은 한 수를 3글자로: (출발칸×90 + 도착칸)을 base64url 18비트로. 칸 = 줄(a~i)×10 + (단-1)
+const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+const FILES = 'abcdefghi';
+function encodeGame() {
+  const su = setupsFromFen(st.startFen);
+  if (!su) return null;
+  let ms = '';
+  for (const m of st.moves) {
+    const p = parseMove(m);
+    const v = (p.ff * 10 + p.fr - 1) * 90 + (p.tf * 10 + p.tr - 1);
+    ms += B64[(v >> 12) & 63] + B64[(v >> 6) & 63] + B64[v & 63];
+  }
+  return `1.${SETUPS.indexOf(su.cho)}${SETUPS.indexOf(su.han)}${st.side === 'cho' ? 'c' : 'h'}${st.level}.${ms}`;
+}
+function shareUrl() {
+  const g = encodeGame();
+  return g && `${location.origin}/#g=${g}`;
+}
+// 잘못된 링크면 null. 수순은 합법인 데까지만 받아들임
+function decodeGame(hash) {
+  const r = /^#g=1\.([0-3])([0-3])([ch])([0-3])\.([A-Za-z0-9_-]*)$/.exec(hash);
+  if (!r) return null;
+  const startFen = fenFor(SETUPS[+r[1]], SETUPS[+r[2]]);
+  const b = new ff.Board('janggi', startFen);
+  const moves = [];
+  try {
+    for (let i = 0; i + 3 <= r[5].length; i += 3) {
+      const v = (B64.indexOf(r[5][i]) << 12) | (B64.indexOf(r[5][i + 1]) << 6) | B64.indexOf(r[5][i + 2]);
+      const from = Math.floor(v / 90), to = v % 90;
+      if (from >= 90) break;
+      const m = `${FILES[Math.floor(from / 10)]}${from % 10 + 1}${FILES[Math.floor(to / 10)]}${to % 10 + 1}`;
+      if (!b.legalMoves().split(' ').includes(m)) break;
+      b.push(m); moves.push(m);
+    }
+  } finally { b.delete(); }
+  if (r[5] && !moves.length) return null; // 수순이 있는데 한 수도 못 읽으면 깨진 링크
+  return { side: r[3] === 'c' ? 'cho' : 'han', level: +r[4], startFen, moves };
+}
+function openShared(g) {
+  st.shared = true;
+  Object.assign(st, { side: g.side, startFen: g.startFen, moves: g.moves, selected: null, hint: null });
+  const su = setupsFromFen(g.startFen);
+  st.mySetup = g.side === 'cho' ? su.cho : su.han; st.engSetup = g.side === 'cho' ? su.han : su.cho;
+  setSide(g.side); setLevel(g.level);
+  rebuild(); checkOver(); resultDismissed = true; drawStatic(); render();
+}
+function leaveShared() {
+  if (!st.shared) return;
+  st.shared = false;
+  history.replaceState(null, '', location.pathname + location.search);
+}
+$('sharedExit').onclick = () => {
+  leaveShared();
+  interruptEngine();
+  if (!restoreSaved()) newGame();
+  else if (engineReady && !st.over && sideToMove() !== st.side) askEngine('engine');
+};
+window.addEventListener('hashchange', () => { if (/^#g=/.test(location.hash)) location.reload(); });
+
 // ---------- 이어하기 (브라우저 저장소) ----------
 function save() {
+  if (st.shared) return; // 공유받은 기보로 내 대국을 덮어쓰지 않음
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       side: st.side, level: st.level, mySetup: st.mySetup, engSetup: st.engSetup, startFen: st.startFen, moves: st.moves,
@@ -490,20 +561,24 @@ function load() {
   try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { return null; }
 }
 
+function restoreSaved() {
+  const data = load();
+  if (!data || !data.startFen) return false;
+  try {
+    // st를 먼저 채워야 setLevel()이 저장할 때 다른 판으로 덮어쓰지 않음
+    Object.assign(st, { side: data.side, mySetup: data.mySetup, engSetup: data.engSetup, startFen: data.startFen, moves: data.moves || [] });
+    setSide(data.side); setLevel(data.level ?? 2);
+    $('mySetup').value = data.mySetup; $('engSetup').value = data.engSetup;
+    rebuild(); checkOver(); resultDismissed = !!st.over; drawStatic(); render();
+    return true;
+  } catch (e) { st.moves = []; return false; }
+}
+
 async function start() {
   ff = await FFishModule({ locateFile: (f) => new URL(f, ENGINE_DIR).href });
-  const data = load();
-  let restored = false;
-  if (data && data.startFen) {
-    try {
-      setSide(data.side); setLevel(data.level ?? 2);
-      $('mySetup').value = data.mySetup; $('engSetup').value = data.engSetup;
-      Object.assign(st, { side: data.side, mySetup: data.mySetup, engSetup: data.engSetup, startFen: data.startFen, moves: data.moves || [] });
-      rebuild(); checkOver(); resultDismissed = !!st.over; drawStatic(); render();
-      restored = true;
-    } catch (e) { st.moves = []; }
-  }
-  if (!restored) { setLevel(2); newGame(); }
+  const shared = location.hash ? decodeGame(location.hash) : null;
+  if (shared) openShared(shared);
+  else if (!restoreSaved()) { setLevel(2); newGame(); }
   startWorker();
 }
 start().catch((e) => {

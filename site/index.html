@@ -39,6 +39,10 @@
 
 <main class="game">
   <section class="board-col" aria-label="장기판">
+    <div class="shared-bar" id="sharedBar" hidden>
+      <span>공유받은 기보를 보는 중입니다</span>
+      <button class="btn" id="sharedExit">내 대국으로</button>
+    </div>
     <div class="pbar">
       <div class="player"><span class="chip han" id="aiChip">漢</span><span id="aiName">AI · 고수</span>
         <span class="turn han" id="aiTurn" hidden><span class="dot"></span><span id="aiTurnText">차례</span></span></div>
@@ -55,7 +59,7 @@
       </div>
     </div>
     <div class="pbar">
-      <div class="player"><span class="chip cho" id="meChip">楚</span>나
+      <div class="player"><span class="chip cho" id="meChip">楚</span><span id="meName">나</span>
         <span class="turn cho" id="meTurn" hidden><span class="dot"></span><span id="meTurnText">내 차례</span></span></div>
       <div class="muted" id="meSetup"></div>
     </div>
