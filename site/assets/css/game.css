@@ -151,10 +151,11 @@
 /* 복기 이동 */
 .replay { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--soft); }
 .rbtn {
-  width: 40px; height: 34px; flex: none; display: grid; place-items: center;
+  height: 36px; padding: 0 9px; flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+  font-size: 13.5px; font-weight: 600; white-space: nowrap;
   border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink);
 }
-.rbtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rbtn svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .rbtn:hover:not(:disabled) { border-color: #cfcac0; }
 .rbtn:disabled { opacity: .35; cursor: default; }
 .rpos { flex: 1; text-align: center; font-size: 13px; color: var(--sub); font-variant-numeric: tabular-nums; }
@@ -270,3 +271,23 @@
 .ng-actions { margin-top: auto; padding-top: 24px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 .ng-actions .btn { height: 60px; font-size: 18px; font-weight: 800; border-radius: 14px; }
 body.modal-open { overflow: hidden; }
+
+/* 휴대폰 기본 글씨: 작은 글자를 한 단계씩 키움 */
+@media (max-width: 639px) {
+  .label { font-size: 13.5px; }
+  .moves { font-size: 15.5px; max-height: 260px; }
+  .evalrow, .material { font-size: 14px; }
+  .an-empty, .an-sum { font-size: 14.5px; }
+  .an-sum thead th { font-size: 13px; }
+  .note { font-size: 13.5px; }
+  .seg button { font-size: 15px; }
+}
+
+/* AI가 둔 자리: 파란 테두리가 세 번 깜빡여 알려 줌 */
+.ai-pulse { fill: none; stroke: var(--blue); stroke-width: 6; transform-box: fill-box; transform-origin: center; animation: aipulse .75s ease-out 3; opacity: 0; }
+@keyframes aipulse { 0% { opacity: .95; transform: scale(.9); } 100% { opacity: 0; transform: scale(1.35); } }
+@media (prefers-reduced-motion: reduce) { .ai-pulse { animation: none; opacity: .8; } }
+
+/* 대국 설정 카드 아래 설정 (소리) */
+.card-opts { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--soft); }
+@media (max-width: 639px) { .card-opts { display: none; } } /* 휴대폰은 메뉴 안에 있음 */

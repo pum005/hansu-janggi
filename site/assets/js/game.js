@@ -222,6 +222,23 @@ function render() {
     if (inCheck && p.t === 'k' && p.side === stm) el('polygon', { class: 'check-ring', points: octagon(x, y, R + 9) }, ml);
   }
 
+  // AI가 방금 둔 수: 출발점에서 미끄러져 오고, 도착한 자리에 파란 테두리가 세 번 깜빡임
+  if (moveFx && !reviewing() && moveFx.i === st.moves.length - 1) {
+    const p = parseMove(st.moves[moveFx.i]);
+    moveFx = null;
+    if (!isPass(p)) {
+      const [fx, fy] = toXY(p.ff, p.fr), [tx, ty] = toXY(p.tf, p.tr);
+      const idx = grid.findIndex((q) => q.f === p.tf && q.r === p.tr);
+      if (idx >= 0) {
+        el('polygon', { class: 'ai-pulse', points: octagon(tx, ty, SIZE[grid[idx].t] + 8) }, ml);
+        const g = pl.children[idx];
+        if (g && g.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          g.animate([{ transform: `translate(${fx - tx}px, ${fy - ty}px)` }, { transform: 'translate(0, 0)' }], { duration: 340, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+        }
+      }
+    }
+  }
+
   if (st.selected) {
     const [x, y] = toXY(st.selected.f, st.selected.r);
     el('polygon', { class: 'sel-ring', points: octagon(x, y, SIZE[st.selected.t] + 7) }, ml);
@@ -349,6 +366,66 @@ function renderPanel() {
   } else res.hidden = true;
 }
 
+// ---------- 착수 소리 ----------
+// 소리 파일 없이 Web Audio로 나무판에 장기알 놓는 '탁' 소리를 만듦
+const SOUND_KEY = 'hansu-janggi:sound';
+let soundOn = (() => { try { return localStorage.getItem(SOUND_KEY) !== '0'; } catch (e) { return true; } })();
+let actx = null;
+function audio() {
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    actx = new AC();
+  }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+// 휴대폰은 화면을 한 번 눌러야 소리를 낼 수 있어서 첫 터치 때 미리 깨워 둠
+document.addEventListener('pointerdown', () => { if (soundOn) audio(); }, { once: true, capture: true });
+function knock({ capture = false, check = false } = {}) {
+  if (!soundOn) return;
+  const ac = audio();
+  if (!ac) return;
+  try {
+    const t = ac.currentTime + 0.01, vol = capture ? 1 : 0.7;
+    // 딱: 짧은 잡음을 대역 필터로 걸러 나무 부딪히는 소리
+    const len = Math.floor(0.05 * ac.sampleRate);
+    const buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 5);
+    const src = ac.createBufferSource(); src.buffer = buf;
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = capture ? 1500 : 1900; bp.Q.value = 1.1;
+    const g1 = ac.createGain(); g1.gain.value = 0.9 * vol;
+    src.connect(bp).connect(g1).connect(ac.destination); src.start(t);
+    // 탁: 낮게 울리는 몸통 소리
+    const o = ac.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(capture ? 300 : 380, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.09);
+    const g2 = ac.createGain(); g2.gain.setValueAtTime(0.55 * vol, t); g2.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+    o.connect(g2).connect(ac.destination); o.start(t); o.stop(t + 0.15);
+    if (check) { // 장군: 맑은 두 음
+      [880, 1175].forEach((f, k) => {
+        const c = ac.createOscillator(); c.type = 'triangle'; c.frequency.value = f;
+        const g = ac.createGain(), s0 = t + 0.12 + k * 0.13;
+        g.gain.setValueAtTime(0.0001, s0); g.gain.exponentialRampToValueAtTime(0.28, s0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, s0 + 0.22);
+        c.connect(g).connect(ac.destination); c.start(s0); c.stop(s0 + 0.24);
+      });
+    }
+  } catch (e) { /* 소리는 없어도 대국은 계속 */ }
+}
+function setSound(on) {
+  soundOn = on;
+  try { localStorage.setItem(SOUND_KEY, on ? '1' : '0'); } catch (e) { /* 저장 못 해도 이번에는 적용 */ }
+  paintSound();
+  if (on) knock(); // 켜면 어떤 소리인지 한 번 들려 줌
+}
+// 소리 버튼은 메뉴 안과 설정 카드에 하나씩 있음
+const soundBtns = [...document.querySelectorAll('[data-toggle="sound"]')];
+const paintSound = () => soundBtns.forEach((b) => b.setAttribute('aria-pressed', String(soundOn)));
+paintSound();
+soundBtns.forEach((b) => { b.onclick = () => setSound(!soundOn); });
+
+// AI가 방금 둔 수: 다음 render() 한 번에만 미끄러지는 움직임과 깜빡임을 보여 줌
+let moveFx = null;
+
 // ---------- 대국 진행 ----------
 function checkOver() {
   if (!board.isGameOver(false)) { st.over = null; return false; }
@@ -363,11 +440,14 @@ function checkOver() {
   }
   return true;
 }
-function play(m) {
+function play(m, by = 'me') {
   clearView(); // 새 수가 두어지면 복기를 끝내고 최신 판으로 돌아옴
+  const capture = board.isCapture(m);
   st.notes.push(noteFor(m));
   board.push(m);
   st.moves.push(m);
+  knock({ capture, check: board.isCheck() });
+  moveFx = by === 'ai' ? { i: st.moves.length - 1 } : null;
   st.selected = null; st.hint = null; resultDismissed = false;
   checkOver();
   render();
@@ -414,7 +494,7 @@ function onWorker(ev) {
     st.thinking = null;
     if (msg.info) applyInfo(msg.info, rootSide);
     if (!msg.move || msg.move === '(none)') { checkOver(); render(); return; }
-    if (kind === 'engine') play(msg.move);
+    if (kind === 'engine') play(msg.move, 'ai');
     else { st.hint = at === shownCount() ? msg.move : null; render(); }
   }
 }

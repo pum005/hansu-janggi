@@ -27,8 +27,9 @@
 <body>
 <header class="site-header">
   <a class="logo" href="/"><span class="logo-mark">將</span>한수 장기</a>
-  <button class="menu-btn" aria-label="메뉴" aria-expanded="false"><span></span><span></span><span></span></button>
-  <nav class="nav" aria-label="주 메뉴">
+  <button class="menu-btn" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span><b class="menu-tx">메뉴</b></button>
+  <nav class="nav" id="mainNav" aria-label="주 메뉴">
+    <div class="nav-opts" role="group" aria-label="설정"><div class="nav-opts-t">설정</div><div class="opts"><button class="opt" data-toggle="sound" aria-pressed="true"><svg class="opt-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3.5v-11L6 8z"/><path class="on" d="M13 7.5a3.5 3.5 0 0 1 0 5M15.2 5a7 7 0 0 1 0 10"/><path class="off" d="M13.5 7.5l4 5M17.5 7.5l-4 5"/></svg><span class="opt-tx">소리</span><span class="opt-st"></span></button></div></div>
     <a href="/" aria-current="page">대국</a>
     <a href="/rules/">장기 규칙</a>
     <a href="/setups/">상차림</a>
@@ -116,6 +117,7 @@
         <div><label class="field-label" for="engSetup">AI 상차림</label><div class="select"><select id="engSetup"></select></div></div>
       </div>
       <p class="note">실력은 바로 바뀌고, 진영과 상차림은 새 대국부터 적용됩니다.</p>
+      <div class="opts card-opts" role="group" aria-label="설정"><button class="opt" data-toggle="sound" aria-pressed="true"><svg class="opt-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3.5v-11L6 8z"/><path class="on" d="M13 7.5a3.5 3.5 0 0 1 0 5M15.2 5a7 7 0 0 1 0 10"/><path class="off" d="M13.5 7.5l4 5M17.5 7.5l-4 5"/></svg><span class="opt-tx">소리</span><span class="opt-st"></span></button></div>
     </section>
 
     <section class="card actions-card" aria-label="대국 조작">
@@ -162,11 +164,11 @@
       <div class="label">수순 <button class="mini" id="shareBtn" disabled>기보 공유</button></div>
       <div class="moves" id="moveList"><span class="empty">아직 둔 수가 없습니다</span></div>
       <div class="replay" role="group" aria-label="복기 이동">
-        <button class="rbtn" id="navFirst" aria-label="첫 배치로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-6 6 6 6"/></svg></button>
-        <button class="rbtn" id="navPrev" aria-label="한 수 앞으로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6"/></svg></button>
+        <button class="rbtn" id="navFirst"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-6 6 6 6"/></svg>처음</button>
+        <button class="rbtn" id="navPrev"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6"/></svg>이전</button>
         <span class="rpos" id="navPos" aria-live="polite">0 / 0</span>
-        <button class="rbtn" id="navNext" aria-label="한 수 뒤로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4l6 6-6 6"/></svg></button>
-        <button class="rbtn" id="navLast" aria-label="최신 수로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l6 6-6 6"/></svg></button>
+        <button class="rbtn" id="navNext">다음<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4l6 6-6 6"/></svg></button>
+        <button class="rbtn" id="navLast">끝<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l6 6-6 6"/></svg></button>
       </div>
     </section>
 
