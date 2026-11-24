@@ -414,13 +414,14 @@ function knock({ capture = false, check = false } = {}) {
 function setSound(on) {
   soundOn = on;
   try { localStorage.setItem(SOUND_KEY, on ? '1' : '0'); } catch (e) { /* 저장 못 해도 이번에는 적용 */ }
-  $('soundBtn').setAttribute('aria-pressed', String(on));
-  $('soundTx').textContent = on ? '소리' : '소리 끔';
+  paintSound();
   if (on) knock(); // 켜면 어떤 소리인지 한 번 들려 줌
 }
-$('soundBtn').setAttribute('aria-pressed', String(soundOn));
-$('soundTx').textContent = soundOn ? '소리' : '소리 끔';
-$('soundBtn').onclick = () => setSound(!soundOn);
+// 소리 버튼은 메뉴 안과 설정 카드에 하나씩 있음
+const soundBtns = [...document.querySelectorAll('[data-toggle="sound"]')];
+const paintSound = () => soundBtns.forEach((b) => b.setAttribute('aria-pressed', String(soundOn)));
+paintSound();
+soundBtns.forEach((b) => { b.onclick = () => setSound(!soundOn); });
 
 // AI가 방금 둔 수: 다음 render() 한 번에만 미끄러지는 움직임과 깜빡임을 보여 줌
 let moveFx = null;

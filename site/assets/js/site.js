@@ -45,19 +45,19 @@ const ADS = {
 // 글씨 크게: <html class="big-text">. 머리말의 인라인 스크립트가 먼저 켜 두므로 깜빡임 없음
 (() => {
   const KEY = 'hansu-janggi:bigtext';
-  const btn = document.getElementById('textBtn');
+  const btns = [...document.querySelectorAll('[data-toggle="bigtext"]')]; // 메뉴 안·설정 카드에 하나씩
   let on = document.documentElement.classList.contains('big-text');
   const apply = () => {
     document.documentElement.classList.toggle('big-text', on);
-    if (btn) btn.setAttribute('aria-pressed', String(on));
+    btns.forEach((b) => b.setAttribute('aria-pressed', String(on)));
     window.dispatchEvent(new Event('resize')); // 그래프 등 크기 다시 계산
   };
   apply();
-  if (btn) btn.addEventListener('click', () => {
+  btns.forEach((b) => b.addEventListener('click', () => {
     on = !on;
     try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) { /* 저장 못 해도 이번 화면에는 적용 */ }
     apply();
-  });
+  }));
 })();
 
 // 광고
