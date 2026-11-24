@@ -287,6 +287,7 @@ function renderPanel() {
   $('passBtn').disabled = !myTurn || reviewing() || !passMove();
   $('undoBtn').disabled = !engineReady || st.shared || st.thinking === 'hint' || !st.moves.some((_, i) => movedBy(i) === st.side);
   $('newBtn').disabled = !ff;
+  $('shareBtn').disabled = !board || !st.moves.length;
 
   // 수순
   const list = $('moveList');
@@ -545,6 +546,28 @@ $('sharedExit').onclick = () => {
   interruptEngine();
   if (!restoreSaved()) newGame();
   else if (engineReady && !st.over && sideToMove() !== st.side) askEngine('engine');
+};
+// 휴대폰은 공유 창, 컴퓨터는 클립보드 복사. 둘 다 안 되면 상태 줄에 주소를 보여 줌
+let shareTimer = 0;
+$('shareBtn').onclick = async () => {
+  const url = shareUrl();
+  if (!url) return;
+  const btn = $('shareBtn');
+  const done = (text) => {
+    btn.textContent = text; btn.classList.add('done');
+    clearTimeout(shareTimer);
+    shareTimer = setTimeout(() => { btn.textContent = '기보 공유'; btn.classList.remove('done'); }, 2000);
+  };
+  if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+    try { await navigator.share({ title: '한수 장기 기보', url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(url); done('링크 복사됨'); }
+  catch (e) {
+    $('subText').innerHTML = '';
+    const a = document.createElement('a'); a.href = url; a.textContent = url; a.className = 'share-url';
+    $('subText').append('이 주소를 복사해 보내세요: ', a);
+  }
 };
 window.addEventListener('hashchange', () => { if (/^#g=/.test(location.hash)) location.reload(); });
 
