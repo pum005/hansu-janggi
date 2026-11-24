@@ -86,6 +86,8 @@
 .result-box p { margin: 6px 0 18px; color: var(--sub); font-size: 14px; }
 .result-box .row { display: flex; gap: 8px; }
 .result-box .btn { flex: 1; }
+.result-box .links { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
+.result-box .links .close { margin-top: 0; }
 .result-box .close { margin-top: 10px; border: 0; background: none; color: var(--sub); font-size: 13px; padding: 4px 8px; }
 
 /* ---------- 패널 ---------- */

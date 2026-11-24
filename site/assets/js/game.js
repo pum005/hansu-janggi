@@ -427,6 +427,17 @@ $('resultUndo').onclick = undo;
 $('newBtn').onclick = () => newGame();
 $('resultNew').onclick = () => newGame();
 $('resultClose').onclick = () => { resultDismissed = true; renderPanel(); };
+$('resultReview').onclick = () => { resultDismissed = true; setView(0); };
+
+// 방향키로 복기: ← → 한 수, Home/End 처음·최신 (입력칸에 있을 때는 제외)
+document.addEventListener('keydown', (ev) => {
+  if (!board || ev.altKey || ev.ctrlKey || ev.metaKey || /^(INPUT|SELECT|TEXTAREA)$/.test(ev.target.tagName)) return;
+  const n = shownCount();
+  const to = { ArrowLeft: n - 1, ArrowRight: n + 1, Home: 0, End: null }[ev.key];
+  if (to === undefined) return;
+  ev.preventDefault();
+  setView(to);
+});
 
 // 설정
 let chosenSide = 'cho';
