@@ -111,6 +111,11 @@
         <span class="an-count" id="anCount"></span>
         <button class="mini" id="anStop">중지</button>
       </div>
+      <div class="an-chart" id="anChartWrap" hidden>
+        <svg id="anChart" role="img" aria-label="수마다 형세 변화. 위로 갈수록 초, 아래로 갈수록 한이 유리합니다. 누르면 그 수로 이동합니다."></svg>
+        <span class="an-lab top" aria-hidden="true">초 유리</span><span class="an-lab bot" aria-hidden="true">한 유리</span>
+        <div class="an-tip" id="anTip" hidden><strong id="anTipVal"></strong><span id="anTipLab"></span></div>
+      </div>
       <table class="an-sum" id="anSum" hidden>
         <thead><tr><th scope="col"><span class="sr">진영</span></th><th scope="col">정확도</th><th scope="col">부정확</th><th scope="col">실수</th><th scope="col">패착</th></tr></thead>
         <tbody>

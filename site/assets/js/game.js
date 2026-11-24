@@ -500,6 +500,71 @@ function stopAnalysis() {
 $('analyzeBtn').onclick = startAnalysis;
 $('anStop').onclick = stopAnalysis;
 
+// 형세 그래프. 그릴 때마다 실제 폭에 맞춰 viewBox를 잡아 원·선이 찌그러지지 않게 함
+const CH = { H: 96, pad: 6 };
+let chartHover = null;
+function chartGeom() {
+  const W = $('anChart').clientWidth || 300, N = Math.max(1, st.moves.length);
+  return {
+    W, N,
+    x: (i) => CH.pad + (i / N) * (W - 2 * CH.pad),
+    y: (cp) => CH.pad + (1 - winCho(cp)) * (CH.H - 2 * CH.pad),
+  };
+}
+function renderChart() {
+  const c = $('anChart');
+  const evals = st.an.evals;
+  const pts = [];
+  for (let i = 0; i <= st.moves.length && evals[i] != null; i++) pts.push(i); // 앞에서부터 이어진 부분만
+  $('anChartWrap').hidden = pts.length < 2;
+  if (pts.length < 2) return;
+  const g = chartGeom();
+  c.setAttribute('viewBox', `0 0 ${g.W} ${CH.H}`);
+  c.innerHTML = '';
+  const mid = g.y(0), last = pts[pts.length - 1];
+  const line = pts.map((i, k) => `${k ? 'L' : 'M'}${g.x(i).toFixed(1)},${g.y(evals[i]).toFixed(1)}`).join(' ');
+  const area = `${line} L${g.x(last).toFixed(1)},${mid.toFixed(1)} L${g.x(0).toFixed(1)},${mid.toFixed(1)} Z`;
+  const defs = el('defs', {}, c);
+  const ct = el('clipPath', { id: 'anClipTop' }, defs); el('rect', { x: 0, y: 0, width: g.W, height: mid }, ct);
+  const cb = el('clipPath', { id: 'anClipBot' }, defs); el('rect', { x: 0, y: mid, width: g.W, height: CH.H - mid }, cb);
+  el('path', { class: 'fill-cho', d: area, 'clip-path': 'url(#anClipTop)' }, c);
+  el('path', { class: 'fill-han', d: area, 'clip-path': 'url(#anClipBot)' }, c);
+  el('line', { class: 'mid', x1: 0, x2: g.W, y1: mid, y2: mid }, c);
+  const n = shownCount();
+  if (reviewing() || st.shared) el('line', { class: 'cur', x1: g.x(n), x2: g.x(n), y1: 0, y2: CH.H }, c);
+  if (chartHover !== null) el('line', { class: 'hover', x1: g.x(chartHover), x2: g.x(chartHover), y1: 0, y2: CH.H }, c);
+  el('path', { class: 'line', d: line }, c);
+  // 실수·패착은 둔 쪽 색 점으로
+  for (let j = 0; j < last; j++) {
+    const v = judge(j);
+    if (v && (v.kind === 'mistake' || v.kind === 'blunder')) el('circle', { class: `dot ${v.mover}`, cx: g.x(j + 1), cy: g.y(evals[j + 1]), r: v.kind === 'blunder' ? 5 : 4 }, c);
+  }
+}
+function chartIndexAt(ev) {
+  const r = $('anChart').getBoundingClientRect(), g = chartGeom();
+  const i = Math.round(((ev.clientX - r.left) - CH.pad) / (g.W - 2 * CH.pad) * g.N);
+  let maxI = 0;
+  while (maxI + 1 <= st.moves.length && st.an.evals[maxI + 1] != null) maxI++;
+  return Math.max(0, Math.min(maxI, i));
+}
+function showTip(i) {
+  chartHover = i;
+  renderChart();
+  const g = chartGeom(), cp = st.an.evals[i];
+  const tip = $('anTip');
+  tip.hidden = false;
+  tip.style.left = Math.max(60, Math.min(g.W - 60, g.x(i))) + 'px';
+  const wc = Math.round(winCho(cp) * 100);
+  $('anTipVal').textContent = Math.abs(cp) > MATE / 2 ? fmtEval(cp) : wc >= 50 ? `초 ${wc}%` : `한 ${100 - wc}%`;
+  const v = i > 0 ? judge(i - 1) : null;
+  $('anTipLab').textContent = i === 0 ? '첫 배치' : `${i}수 ${st.notes[i - 1]}` + (v && MARKS[v.kind] ? ` · ${MARKS[v.kind].ko}` : '');
+}
+function hideTip() { chartHover = null; $('anTip').hidden = true; renderChart(); }
+$('anChart').addEventListener('pointermove', (ev) => showTip(chartIndexAt(ev)));
+$('anChart').addEventListener('pointerleave', hideTip);
+$('anChart').addEventListener('click', (ev) => setView(chartIndexAt(ev)));
+if (window.ResizeObserver) new ResizeObserver(() => { if (!$('anChartWrap').hidden) renderChart(); }).observe($('analysisCard'));
+
 function renderAnalysis() {
   const has = st.an.evals.some((v) => v != null);
   const running = st.thinking === 'analyze';
@@ -527,6 +592,7 @@ function renderAnalysis() {
     if (v.kind in sum[v.mover]) sum[v.mover][v.kind]++;
   }
   $('anSum').hidden = !any;
+  if (!$('analysisCard').hidden) renderChart();
   for (const [side, k] of [['cho', 'C'], ['han', 'H']]) {
     const x = sum[side];
     $('anAcc' + k).textContent = x.acc.length ? Math.round(x.acc.reduce((a, b) => a + b, 0) / x.acc.length) + '%' : '–';

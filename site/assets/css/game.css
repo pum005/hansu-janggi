@@ -179,3 +179,26 @@
 .an-sum tbody th .chip { display: inline-grid; width: 20px; height: 20px; font-size: 11px; border-radius: 5px; margin-right: 6px; vertical-align: -5px; }
 .an-sum td:nth-child(2) { font-weight: 700; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 형세 그래프: 위 = 초 유리, 아래 = 한 유리 */
+.an-chart { position: relative; margin-top: 4px; }
+.an-chart[hidden] { display: none; }
+#anChart { display: block; width: 100%; height: 96px; cursor: pointer; touch-action: pan-y; }
+#anChart .mid { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 3 3; }
+#anChart .fill-cho { fill: var(--cho); opacity: .16; }
+#anChart .fill-han { fill: var(--han); opacity: .16; }
+#anChart .line { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+#anChart .cur { stroke: var(--blue); stroke-width: 2; }
+#anChart .hover { stroke: var(--sub); stroke-width: 1; }
+#anChart .dot { stroke: var(--card); stroke-width: 2; }
+#anChart .dot.cho { fill: var(--cho); } #anChart .dot.han { fill: var(--han); }
+.an-lab { position: absolute; left: 4px; font-size: 11px; color: var(--sub); pointer-events: none; line-height: 1; }
+.an-lab.top { top: 4px; } .an-lab.bot { bottom: 4px; }
+.an-tip {
+  position: absolute; top: -6px; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap;
+  background: var(--ink); color: #fff; border-radius: 8px; padding: 5px 9px; font-size: 12px; line-height: 1.35;
+  display: flex; flex-direction: column; align-items: center; z-index: 2;
+}
+.an-tip[hidden] { display: none; }
+.an-tip strong { font-size: 13px; font-variant-numeric: tabular-nums; }
+.an-tip span { opacity: .75; }
