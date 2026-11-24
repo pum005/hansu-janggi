@@ -103,6 +103,23 @@
       <div class="material" id="materialText"></div>
     </section>
 
+    <section class="card analysis-card" id="analysisCard" aria-label="대국 분석" hidden>
+      <div class="label">대국 분석 <button class="mini" id="analyzeBtn" disabled>분석하기</button></div>
+      <p class="an-empty" id="anEmpty">엔진이 국면마다 다시 읽어 실수와 최선 수를 찾아 줍니다. 한 수에 0.3초쯤 걸립니다.</p>
+      <div class="an-progress" id="anProgress" hidden>
+        <div class="an-bar"><span id="anFill"></span></div>
+        <span class="an-count" id="anCount"></span>
+        <button class="mini" id="anStop">중지</button>
+      </div>
+      <table class="an-sum" id="anSum" hidden>
+        <thead><tr><th scope="col"><span class="sr">진영</span></th><th scope="col">정확도</th><th scope="col">부정확</th><th scope="col">실수</th><th scope="col">패착</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><span class="chip cho">楚</span>초</th><td id="anAccC"></td><td id="anInaC"></td><td id="anMisC"></td><td id="anBluC"></td></tr>
+          <tr><th scope="row"><span class="chip han">漢</span>한</th><td id="anAccH"></td><td id="anInaH"></td><td id="anMisH"></td><td id="anBluH"></td></tr>
+        </tbody>
+      </table>
+    </section>
+
     <section class="card moves-card">
       <div class="label">수순 <button class="mini" id="shareBtn" disabled>기보 공유</button></div>
       <div class="moves" id="moveList"><span class="empty">아직 둔 수가 없습니다</span></div>

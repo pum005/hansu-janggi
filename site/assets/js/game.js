@@ -19,6 +19,8 @@ const SIZE = { k: 46, r: 40, c: 40, n: 40, b: 40, a: 32, p: 32 };
 const POINTS = { r: 13, c: 7, n: 5, b: 3, a: 3, p: 2, k: 0 };
 const KO_NAME = { K: '궁', A: '사', R: '차', C: '포', H: '마', E: '상', P: '졸' };
 const NS = 'http://www.w3.org/2000/svg';
+const AN_MS = 300;       // 분석할 때 국면마다 엔진이 읽는 시간(ms)
+const MATE = 100000;     // 외통 점수: ±(MATE - 남은 수)
 
 const $ = (id) => document.getElementById(id);
 const svg = $('board');
@@ -32,6 +34,8 @@ const st = {
   selected: null, hint: null, evalCho: 0, evalText: '0.0', depth: '', thinking: null, over: null,
   view: null, // 복기 중이면 보고 있는 수 번호(0 = 첫 배치), 아니면 null
   shared: false, // 공유 링크로 연 기보를 보는 중이면 true (두기·저장 안 함)
+  // 대국 분석: i번째 국면(i수를 둔 뒤)의 형세(초 기준 cp)와 그 국면의 최선 수
+  an: { evals: [], best: [] },
 };
 
 // ---------- 좌표 ----------
@@ -79,6 +83,9 @@ function setupsFromFen(fen) {
 // ---------- 판 상태 ----------
 function rebuild() {
   clearView();
+  // 무르기 등으로 수순이 줄면 그 뒤 국면의 분석은 버림 (앞 국면 분석은 그대로 유효)
+  st.an.evals.length = Math.min(st.an.evals.length, st.moves.length + 1);
+  st.an.best.length = Math.min(st.an.best.length, st.moves.length + 1);
   if (board) board.delete();
   board = new ff.Board('janggi', st.startFen);
   st.notes = [];
@@ -259,6 +266,7 @@ function renderPanel() {
   if (!engineReady) { status = '엔진을 불러오는 중…'; sub = '처음 한 번만 엔진 파일(약 1MB)을 받습니다'; }
   else if (st.over) { status = st.over.title; sub = st.over.text; }
   else if (st.thinking === 'engine') { status = '상대가 수를 읽는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
+  else if (st.thinking === 'analyze') { status = '대국을 분석하는 중'; sub = `국면 ${anDone} / ${anTotal} · 중지해도 끝난 부분은 남습니다`; }
   else if (st.thinking === 'hint') { status = '훈수를 찾는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
   else if (reviewing()) {
     status = st.view === 0 ? '복기 · 첫 배치' : `복기 · ${st.view}수째 ${st.notes[st.view - 1]}`;
@@ -314,6 +322,8 @@ function renderPanel() {
   $('navNext').disabled = $('navLast').disabled = !reviewing();
   $('navPos').textContent = `${n} / ${total}`;
   $('navPos').classList.toggle('on', reviewing());
+
+  renderAnalysis();
 
   // 결과 창
   const res = $('result');
@@ -381,10 +391,12 @@ function onWorker(ev) {
     return;
   }
   if (!pending || msg.id !== pending.id) return;
-  if (msg.type === 'info') { applyInfo(msg.line, pending.rootSide); renderPanel(); return; }
+  if (msg.type === 'info') { if (pending.kind !== 'analyze') { applyInfo(msg.line, pending.rootSide); renderPanel(); } return; }
   if (msg.type === 'error') { st.thinking = null; pending = null; render(); $('subText').textContent = '엔진 오류: ' + msg.message; return; }
   if (msg.type === 'bestmove') {
-    const { kind, rootSide, at } = pending; pending = null; st.thinking = null;
+    const { kind, rootSide, at } = pending; pending = null;
+    if (kind === 'analyze') { onAnalyzed(msg, rootSide, at); return; }
+    st.thinking = null;
     if (msg.info) applyInfo(msg.info, rootSide);
     if (!msg.move || msg.move === '(none)') { checkOver(); render(); return; }
     if (kind === 'engine') play(msg.move);
@@ -401,6 +413,126 @@ function startWorker() {
 }
 // 엔진이 읽는 중에 판을 바꿔야 하면 워커를 새로 띄움 (단일 스레드라 중간에 멈출 수 없음)
 function interruptEngine() { if (st.thinking || pending) startWorker(); }
+
+// ---------- 대국 분석 ----------
+// 형세 점수 → 초가 이길 가능성(0~1). 체스 분석 사이트에서 흔히 쓰는 로지스틱 곡선
+const winCho = (cp) => 1 / (1 + Math.exp(-0.00368208 * Math.max(-3000, Math.min(3000, cp))));
+const parseScore = (line, side) => { // 엔진 info 줄 → 초 기준 점수
+  const sign = side === 'cho' ? 1 : -1;
+  const cp = /score cp (-?\d+)/.exec(line), mate = /score mate (-?\d+)/.exec(line);
+  if (cp) return sign * +cp[1];
+  if (mate) { const n = +mate[1]; return sign * (n >= 0 ? 1 : -1) * (MATE - Math.abs(n)); }
+  return null;
+};
+function fmtEval(cp) {
+  if (Math.abs(cp) > MATE / 2) return `${cp > 0 ? '초' : '한'} ${MATE - Math.abs(cp)}수 외통`;
+  const v = cp / 100;
+  return (v > 0 ? '초 +' : v < 0 ? '한 +' : '') + Math.abs(v).toFixed(1);
+}
+const MARKS = { inaccuracy: { sym: '?!', ko: '부정확' }, mistake: { sym: '?', ko: '실수' }, blunder: { sym: '??', ko: '패착' } };
+// j번째 수(국면 j → j+1)의 평가. 두 국면이 모두 분석돼야 함
+function judge(j) {
+  const a = st.an.evals[j], b = st.an.evals[j + 1];
+  if (a == null || b == null) return null;
+  const mover = movedBy(j);
+  const before = mover === 'cho' ? winCho(a) : 1 - winCho(a);
+  const after = mover === 'cho' ? winCho(b) : 1 - winCho(b);
+  const drop = Math.max(0, before - after) * 100;
+  const kind = drop >= 30 ? 'blunder' : drop >= 20 ? 'mistake' : drop >= 10 ? 'inaccuracy' : st.moves[j] === st.an.best[j] ? 'best' : 'good';
+  // 수마다 정확도: 이길 가능성을 얼마나 잃었는지로 0~100
+  const acc = Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * drop) - 3.1669));
+  return { mover, drop, kind, acc };
+}
+const analyzedAll = () => st.moves.length > 0 && st.an.evals.length === st.moves.length + 1 && !st.an.evals.includes(undefined) && !st.an.evals.includes(null);
+function startAnalysis() {
+  if (!engineReady || st.thinking || !st.moves.length) return;
+  st.selected = null; st.hint = null;
+  st.thinking = 'analyze';
+  anTotal = 0;
+  for (let i = 0; i <= st.moves.length; i++) if (st.an.evals[i] == null) anTotal++;
+  anDone = 0;
+  analyzeNext();
+}
+let anTotal = 0, anDone = 0;
+function analyzeNext() {
+  if (st.thinking !== 'analyze') return;
+  let i = 0;
+  while (i <= st.moves.length && st.an.evals[i] != null) i++;
+  if (i > st.moves.length) { // 끝
+    st.thinking = null; save(); render();
+    if (!st.shared && !st.over && sideToMove() !== st.side) askEngine('engine');
+    return;
+  }
+  const b = new ff.Board('janggi', st.startFen);
+  for (const m of st.moves.slice(0, i)) b.push(m);
+  try {
+    if (b.isGameOver(false)) { // 끝난 국면은 엔진 대신 결과로
+      const res = b.result(false);
+      st.an.evals[i] = res === '1-0' ? MATE : res === '0-1' ? -MATE : 0;
+      st.an.best[i] = null;
+      anDone++; renderPanel();
+      setTimeout(analyzeNext, 0);
+      return;
+    }
+    const id = ++reqId;
+    pending = { id, kind: 'analyze', rootSide: b.turn() ? 'cho' : 'han', at: i };
+  } finally { b.delete(); }
+  worker.postMessage({ type: 'go', id: reqId, commands: [
+    'setoption name UCI_Variant value janggi',
+    'setoption name Skill Level value 20',
+    `position fen ${st.startFen}${i ? ' moves ' + st.moves.slice(0, i).join(' ') : ''}`,
+    `go movetime ${AN_MS}`,
+  ] });
+}
+function onAnalyzed(msg, rootSide, at) {
+  const score = msg.info ? parseScore(msg.info, rootSide) : null;
+  st.an.evals[at] = score ?? 0;
+  st.an.best[at] = msg.move && msg.move !== '(none)' ? msg.move : null;
+  anDone++;
+  render();
+  analyzeNext();
+}
+function stopAnalysis() {
+  if (st.thinking !== 'analyze') return;
+  interruptEngine(); // 워커를 새로 띄우면 진행 중인 분석이 멈춤 (이미 끝난 국면 분석은 남음)
+  save(); render();
+}
+$('analyzeBtn').onclick = startAnalysis;
+$('anStop').onclick = stopAnalysis;
+
+function renderAnalysis() {
+  const has = st.an.evals.some((v) => v != null);
+  const running = st.thinking === 'analyze';
+  // 대국 중에는 숨기고, 끝났거나 복기·공유 보기·분석 결과가 있을 때만 보여 줌
+  $('analysisCard').hidden = !(st.over || reviewing() || st.shared || has || running);
+  const all = analyzedAll();
+  const btn = $('analyzeBtn');
+  btn.hidden = running;
+  btn.disabled = !engineReady || !!st.thinking || all || !st.moves.length;
+  btn.textContent = all ? '분석 완료' : has ? '이어서 분석' : '분석하기';
+  $('anEmpty').hidden = has || running;
+  $('anProgress').hidden = !running;
+  if (running) {
+    $('anFill').style.width = (anTotal ? (100 * anDone / anTotal) : 0).toFixed(1) + '%';
+    $('anCount').textContent = `${anDone} / ${anTotal}`;
+  }
+  // 요약 표
+  const sum = { cho: { acc: [], inaccuracy: 0, mistake: 0, blunder: 0 }, han: { acc: [], inaccuracy: 0, mistake: 0, blunder: 0 } };
+  let any = false;
+  for (let j = 0; j < st.moves.length; j++) {
+    const v = judge(j);
+    if (!v) continue;
+    any = true;
+    sum[v.mover].acc.push(v.acc);
+    if (v.kind in sum[v.mover]) sum[v.mover][v.kind]++;
+  }
+  $('anSum').hidden = !any;
+  for (const [side, k] of [['cho', 'C'], ['han', 'H']]) {
+    const x = sum[side];
+    $('anAcc' + k).textContent = x.acc.length ? Math.round(x.acc.reduce((a, b) => a + b, 0) / x.acc.length) + '%' : '–';
+    $('anIna' + k).textContent = x.inaccuracy; $('anMis' + k).textContent = x.mistake; $('anBlu' + k).textContent = x.blunder;
+  }
+}
 
 // ---------- 입력 ----------
 svg.addEventListener('click', (ev) => {
@@ -483,6 +615,7 @@ function newGame() {
   st.startFen = buildStartFen();
   st.moves = []; st.selected = null; st.hint = null; st.over = null; resultDismissed = false;
   st.evalCho = 0; st.evalText = '0.0'; st.depth = '';
+  st.an = { evals: [], best: [] };
   interruptEngine();
   rebuild(); drawStatic(); render(); save();
   if (engineReady && sideToMove() !== st.side) askEngine('engine');
@@ -530,7 +663,7 @@ function decodeGame(hash) {
 }
 function openShared(g) {
   st.shared = true;
-  Object.assign(st, { side: g.side, startFen: g.startFen, moves: g.moves, selected: null, hint: null });
+  Object.assign(st, { side: g.side, startFen: g.startFen, moves: g.moves, selected: null, hint: null, an: { evals: [], best: [] } });
   const su = setupsFromFen(g.startFen);
   st.mySetup = g.side === 'cho' ? su.cho : su.han; st.engSetup = g.side === 'cho' ? su.han : su.cho;
   setSide(g.side); setLevel(g.level);
@@ -577,6 +710,7 @@ function save() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       side: st.side, level: st.level, mySetup: st.mySetup, engSetup: st.engSetup, startFen: st.startFen, moves: st.moves,
+      an: st.an,
     }));
   } catch (e) { /* 사생활 보호 모드 등 */ }
 }
@@ -589,7 +723,8 @@ function restoreSaved() {
   if (!data || !data.startFen) return false;
   try {
     // st를 먼저 채워야 setLevel()이 저장할 때 다른 판으로 덮어쓰지 않음
-    Object.assign(st, { side: data.side, mySetup: data.mySetup, engSetup: data.engSetup, startFen: data.startFen, moves: data.moves || [] });
+    const an = data.an && Array.isArray(data.an.evals) && Array.isArray(data.an.best) ? data.an : { evals: [], best: [] };
+    Object.assign(st, { side: data.side, mySetup: data.mySetup, engSetup: data.engSetup, startFen: data.startFen, moves: data.moves || [], an });
     setSide(data.side); setLevel(data.level ?? 2);
     $('mySetup').value = data.mySetup; $('engSetup').value = data.engSetup;
     rebuild(); checkOver(); resultDismissed = !!st.over; drawStatic(); render();
