@@ -211,3 +211,37 @@
 .q.inaccuracy { color: #b7791f; }
 .q.mistake { color: #dd6b20; }
 .q.blunder { color: var(--han); }
+
+/* ---------- 휴대폰 전용 하단 버튼 ---------- */
+.mbar { display: none; }
+@media (max-width: 639px) {
+  /* 판 아래 버튼 줄이 조작을 맡으므로 패널의 조작 카드·상태 문구·결과 창은 숨김 */
+  .actions-card, .status-card .status-line, .status-card .substatus, .result { display: none !important; }
+  .me-bar { display: none; } /* 차례·진영은 아래 상태 줄이 보여 줌 */
+  .mbar { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+  .mbar [data-for] { display: none; }
+  .mbar [hidden] { display: none !important; }
+  .mbar[data-mode="play"] [data-for="play"], .mbar[data-mode="review"] [data-for="review"],
+  .mbar[data-mode="over"] [data-for="over"], .mbar[data-mode="analyze"] [data-for="analyze"] { display: grid; }
+  .mb-status {
+    display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; min-height: 64px;
+  }
+  .mb-status strong { display: block; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.35; }
+  .mb-status span:not(.mb-dot):not(.q):not(.alert) { display: block; font-size: 15px; color: #4a4a4f; line-height: 1.45; margin-top: 2px; }
+  .mb-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; margin-top: 7px; background: var(--faint); }
+  .mb-dot.cho { background: var(--cho); } .mb-dot.han { background: var(--han); }
+  .mb-dot.cho, .mb-dot.han { box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 0%, rgba(0,0,0,.06)); }
+  .mb-row { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .mb-row.c2 { grid-template-columns: 1fr 1fr; }
+  .mb-row.c3 { grid-template-columns: 1fr 1fr 1.2fr; }
+  .mb-row.c3.no-an { grid-template-columns: 1fr 1.6fr; }
+  .mbar .btn { height: 54px; padding: 0 4px; font-size: 16px; font-weight: 700; border-radius: 12px; }
+  .mbar .btn.big { height: 62px; font-size: 18px; }
+  .mbar .btn.ghost { background: var(--soft); border-color: var(--soft); color: var(--ink); height: 48px; font-size: 15px; }
+  .mb-wide { width: 100%; }
+  .mbar [data-for="analyze"] { grid-template-columns: 1fr auto; align-items: center; gap: 12px; }
+  .mb-progress { height: 10px; border-radius: 6px; background: var(--soft); overflow: hidden; }
+  .mb-progress span { display: block; height: 100%; width: 0; background: var(--blue); transition: width .2s; }
+  .mbar [data-for="analyze"] .btn { padding: 0 22px; }
+}

@@ -58,10 +58,40 @@
         </div>
       </div>
     </div>
-    <div class="pbar">
+    <div class="pbar me-bar">
       <div class="player"><span class="chip cho" id="meChip">楚</span><span id="meName">나</span>
         <span class="turn cho" id="meTurn" hidden><span class="dot"></span><span id="meTurnText">내 차례</span></span></div>
       <div class="muted" id="meSetup"></div>
+    </div>
+
+    <!-- 휴대폰 전용: 판 바로 아래에서 상황에 맞는 버튼만 보여 줌 (스크롤 없이 쓰게) -->
+    <div class="mbar" id="mbar" data-mode="play">
+      <div class="mb-status" aria-live="polite"><span class="mb-dot" id="mbDot"></span><div><strong id="mbStatus">엔진을 불러오는 중…</strong><span id="mbSub"></span></div></div>
+      <div class="mb-row c4" data-for="play">
+        <button class="btn hint" id="mbHint" disabled>훈수</button>
+        <button class="btn" id="mbUndo" disabled>무르기</button>
+        <button class="btn" id="mbPass" disabled>한수 쉼</button>
+        <button class="btn primary" id="mbNew" disabled>새 대국</button>
+      </div>
+      <button class="btn ghost mb-wide" data-for="play" id="mbBack" disabled>◀ 지난 수 다시 보기</button>
+      <div class="mb-row c2" data-for="review">
+        <button class="btn big" id="mbPrev">◀ 이전 수</button>
+        <button class="btn big" id="mbNext">다음 수 ▶</button>
+      </div>
+      <div class="mb-row c3" data-for="review">
+        <button class="btn hint" id="mbHint2">훈수</button>
+        <button class="btn" id="mbAnalyze">실수 찾기</button>
+        <button class="btn primary" id="mbExit">복기 끝내기</button>
+      </div>
+      <div class="mb-row c2" data-for="over">
+        <button class="btn big" id="mbReview">복기하기</button>
+        <button class="btn big primary" id="mbNew2">새 대국</button>
+      </div>
+      <button class="btn ghost mb-wide" data-for="over" id="mbShare">기보 보내기 (카톡 등)</button>
+      <div class="mb-row" data-for="analyze">
+        <div class="mb-progress"><span id="mbFill"></span></div>
+        <button class="btn" id="mbStop">그만</button>
+      </div>
     </div>
   </section>
 
