@@ -31,8 +31,8 @@
   <div class="hd-tools">
     <button class="tool" id="textBtn" aria-pressed="false"><span class="tool-ic" aria-hidden="true">가</span>글씨 크게</button>
   </div>
-  <button class="menu-btn" aria-label="메뉴" aria-expanded="false"><span></span><span></span><span></span></button>
-  <nav class="nav" aria-label="주 메뉴">
+  <button class="menu-btn" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span><b class="menu-tx">메뉴</b></button>
+  <nav class="nav" id="mainNav" aria-label="주 메뉴">
     <a href="/" aria-current="page">대국</a>
     <a href="/rules/">장기 규칙</a>
     <a href="/setups/">상차림</a>
@@ -166,11 +166,11 @@
       <div class="label">수순 <button class="mini" id="shareBtn" disabled>기보 공유</button></div>
       <div class="moves" id="moveList"><span class="empty">아직 둔 수가 없습니다</span></div>
       <div class="replay" role="group" aria-label="복기 이동">
-        <button class="rbtn" id="navFirst" aria-label="첫 배치로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-6 6 6 6"/></svg></button>
-        <button class="rbtn" id="navPrev" aria-label="한 수 앞으로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6"/></svg></button>
+        <button class="rbtn" id="navFirst"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-6 6 6 6"/></svg>처음</button>
+        <button class="rbtn" id="navPrev"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6"/></svg>이전</button>
         <span class="rpos" id="navPos" aria-live="polite">0 / 0</span>
-        <button class="rbtn" id="navNext" aria-label="한 수 뒤로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4l6 6-6 6"/></svg></button>
-        <button class="rbtn" id="navLast" aria-label="최신 수로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l6 6-6 6"/></svg></button>
+        <button class="rbtn" id="navNext">다음<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4l6 6-6 6"/></svg></button>
+        <button class="rbtn" id="navLast">끝<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l6 6-6 6"/></svg></button>
       </div>
     </section>
 

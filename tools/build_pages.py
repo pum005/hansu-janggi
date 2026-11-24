@@ -45,8 +45,8 @@ TEMPLATE = """<!doctype html>
   <div class="hd-tools">
     <button class="tool" id="textBtn" aria-pressed="false"><span class="tool-ic" aria-hidden="true">가</span>글씨 크게</button>
   </div>
-  <button class="menu-btn" aria-label="메뉴" aria-expanded="false"><span></span><span></span><span></span></button>
-  <nav class="nav" aria-label="주 메뉴">
+  <button class="menu-btn" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span><b class="menu-tx">메뉴</b></button>
+  <nav class="nav" id="mainNav" aria-label="주 메뉴">
 {nav}
   </nav>
 </header>
