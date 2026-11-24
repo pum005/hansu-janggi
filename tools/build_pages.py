@@ -36,7 +36,6 @@ TEMPLATE = """<!doctype html>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/assets/css/site.css">
 <link rel="stylesheet" href="/assets/css/article.css">
-<script>try{{if(localStorage.getItem('hansu-janggi:bigtext')==='1')document.documentElement.classList.add('big-text')}}catch(e){{}}</script>
 <script src="/assets/js/site.js" defer></script>
 </head>
 <body>
@@ -44,7 +43,6 @@ TEMPLATE = """<!doctype html>
   <a class="logo" href="/"><span class="logo-mark">將</span>한수 장기</a>
   <button class="menu-btn" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span><b class="menu-tx">메뉴</b></button>
   <nav class="nav" id="mainNav" aria-label="주 메뉴">
-    <div class="nav-opts" role="group" aria-label="화면 설정"><div class="nav-opts-t">화면 설정</div><div class="opts"><button class="opt" data-toggle="bigtext" aria-pressed="false"><span class="opt-ic" aria-hidden="true">가</span><span class="opt-tx">글씨 크게</span><span class="opt-st"></span></button></div></div>
 {nav}
   </nav>
 </header>

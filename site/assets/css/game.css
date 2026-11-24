@@ -288,6 +288,6 @@ body.modal-open { overflow: hidden; }
 @keyframes aipulse { 0% { opacity: .95; transform: scale(.9); } 100% { opacity: 0; transform: scale(1.35); } }
 @media (prefers-reduced-motion: reduce) { .ai-pulse { animation: none; opacity: .8; } }
 
-/* 대국 설정 카드 아래 화면 설정 */
+/* 대국 설정 카드 아래 설정 (소리) */
 .card-opts { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--soft); }
 @media (max-width: 639px) { .card-opts { display: none; } } /* 휴대폰은 메뉴 안에 있음 */

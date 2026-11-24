@@ -84,7 +84,7 @@ button { cursor: pointer; }
   .nav a:last-child { border-bottom: 0; }
 }
 
-/* ---------- 화면 설정 버튼 (글씨 크게 · 소리): 휴대폰은 메뉴 안, 컴퓨터는 대국 설정 카드 ---------- */
+/* ---------- 설정 버튼 (소리): 휴대폰은 메뉴 안, 컴퓨터는 대국 설정 카드 ---------- */
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .opts:has(> .opt:only-child) { grid-template-columns: 1fr; }
 .opt {
@@ -111,9 +111,6 @@ svg.opt-ic { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: 
   .nav-opts .opts { grid-template-columns: 1fr; } /* 메뉴 안에서는 한 줄에 하나씩 넓게 */
   .nav-opts .opt { min-height: 52px; font-size: 16px; }
 }
-
-/* 글씨 크게: 글자가 있는 영역을 한꺼번에 키움 (판 크기는 그대로) */
-html.big-text :is(.panel, .mbar, .ng-box, .article, .pbar, .shared-bar, .nav, .result-box) { zoom: 1.18; }
 
 /* ---------- 푸터 ---------- */
 .site-footer {
