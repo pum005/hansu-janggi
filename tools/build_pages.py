@@ -4,9 +4,14 @@
   <!-- path: /rules/ -->
   <!-- title: 장기 규칙 -->
   <!-- desc: 설명 -->
-사용: python3 tools/build_pages.py
+사용: python3 tools/build_pages.py           글 페이지 생성 + 모든 HTML의 CSS·JS 주소에 버전 붙이기
+      python3 tools/build_pages.py --check   버전이 파일 내용과 맞는지만 확인 (배포 전 점검, 틀리면 종료 코드 1)
+
+CSS·JS는 하루 캐시되므로, 파일을 고치고 배포하면 예전 파일을 쓰는 사람이 생깁니다.
+그래서 HTML 안의 /assets/css/*.css, /assets/js/*.js 주소에 내용 해시를 ?v=로 붙여
+파일이 바뀌면 주소도 바뀌게 합니다. (엔진은 폴더 이름 v1로 버전을 관리하므로 제외)
 """
-import pathlib, re
+import hashlib, pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
@@ -84,5 +89,36 @@ def main():
     (SITE / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {DOMAIN}/sitemap.xml\n", encoding="utf-8")
     print("wrote site/sitemap.xml, site/robots.txt")
 
+ASSET_RE = re.compile(r'(["\'])(/assets/(?:css|js)/[\w.-]+\.(?:css|js))(?:\?v=[0-9a-f]*)?\1')
+
+def asset_version(url):
+    data = (SITE / url.lstrip("/")).read_bytes()
+    return hashlib.sha256(data).hexdigest()[:10]
+
+def stamp(html):
+    return ASSET_RE.sub(lambda m: f"{m.group(1)}{m.group(2)}?v={asset_version(m.group(2))}{m.group(1)}", html)
+
+def stamp_all(check=False):
+    stale = []
+    for f in sorted(SITE.rglob("*.html")):
+        src = f.read_text(encoding="utf-8")
+        out = stamp(src)
+        if out != src:
+            stale.append(f.relative_to(ROOT))
+            if not check:
+                f.write_text(out, encoding="utf-8")
+    return stale
+
 if __name__ == "__main__":
-    main()
+    if "--check" in sys.argv:
+        stale = stamp_all(check=True)
+        for f in stale:
+            print("버전이 맞지 않음:", f)
+        if stale:
+            print("python3 tools/build_pages.py 를 실행한 뒤 커밋하세요.")
+            sys.exit(1)
+        print("모든 HTML의 CSS·JS 버전이 최신입니다.")
+    else:
+        main()
+        for f in stamp_all():
+            print("versioned", f)
