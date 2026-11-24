@@ -61,11 +61,18 @@ function backRank(setup, upper) {
   const s = `r${b}${c}a1a${g}${h}r`;
   return upper ? s.toUpperCase() : s;
 }
+const fenFor = (cho, han) => `${backRank(han, false)}/4k4/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/4K4/${backRank(cho, true)} w - - 0 1`;
 function buildStartFen() {
   const pick = (v) => (v === '무작위' ? SETUPS[Math.floor(Math.random() * 4)] : v);
   const my = pick(st.mySetup), eng = pick(st.engSetup);
-  const cho = st.side === 'cho' ? my : eng, han = st.side === 'cho' ? eng : my;
-  return `${backRank(han, false)}/4k4/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/4K4/${backRank(cho, true)} w - - 0 1`;
+  return st.side === 'cho' ? fenFor(my, eng) : fenFor(eng, my);
+}
+// 시작 FEN에서 초·한 상차림을 거꾸로 찾음 (못 찾으면 null)
+function setupsFromFen(fen) {
+  const rows = fen.split(' ')[0].split('/');
+  const cho = SETUPS.find((v) => backRank(v, true) === rows[9]);
+  const han = SETUPS.find((v) => backRank(v, false) === rows[0]);
+  return cho && han && fenFor(cho, han) === fen ? { cho, han } : null;
 }
 
 // ---------- 판 상태 ----------
