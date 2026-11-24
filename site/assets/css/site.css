@@ -8,7 +8,7 @@
   --bg: #f5f4f0;
   --card: #ffffff;
   --ink: #1d1d1f;
-  --sub: #6e6e73;
+  --sub: #5c5c61; /* 보조 글자: 어르신도 읽기 쉽게 대비를 높임 (흰 바탕 대비 6.7:1) */
   --faint: #a8a296;
   --line: #e6e3dc;
   --soft: #f1efea;

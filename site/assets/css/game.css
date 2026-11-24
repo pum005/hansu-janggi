@@ -270,3 +270,14 @@
 .ng-actions { margin-top: auto; padding-top: 24px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 .ng-actions .btn { height: 60px; font-size: 18px; font-weight: 800; border-radius: 14px; }
 body.modal-open { overflow: hidden; }
+
+/* 휴대폰 기본 글씨: 작은 글자를 한 단계씩 키움 */
+@media (max-width: 639px) {
+  .label { font-size: 13.5px; }
+  .moves { font-size: 15.5px; max-height: 260px; }
+  .evalrow, .material { font-size: 14px; }
+  .an-empty, .an-sum { font-size: 14.5px; }
+  .an-sum thead th { font-size: 13px; }
+  .note { font-size: 13.5px; }
+  .seg button { font-size: 15px; }
+}
