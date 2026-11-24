@@ -102,6 +102,13 @@
     <section class="card moves-card">
       <div class="label">수순</div>
       <div class="moves" id="moveList"><span class="empty">아직 둔 수가 없습니다</span></div>
+      <div class="replay" role="group" aria-label="복기 이동">
+        <button class="rbtn" id="navFirst" aria-label="첫 배치로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-6 6 6 6"/></svg></button>
+        <button class="rbtn" id="navPrev" aria-label="한 수 앞으로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6"/></svg></button>
+        <span class="rpos" id="navPos" aria-live="polite">0 / 0</span>
+        <button class="rbtn" id="navNext" aria-label="한 수 뒤로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4l6 6-6 6"/></svg></button>
+        <button class="rbtn" id="navLast" aria-label="최신 수로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l6 6-6 6"/></svg></button>
+      </div>
     </section>
 
     <div class="ad-slot game-ad" data-ad="game"></div>

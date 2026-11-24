@@ -249,8 +249,13 @@ function renderPanel() {
   else if (st.over) { status = st.over.title; sub = st.over.text; }
   else if (st.thinking === 'engine') { status = '상대가 수를 읽는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
   else if (st.thinking === 'hint') { status = '훈수를 찾는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
+  else if (reviewing()) {
+    status = st.view === 0 ? '복기 · 첫 배치' : `복기 · ${st.view}수째 ${st.notes[st.view - 1]}`;
+    sub = st.over ? '◀ ▶ 버튼으로 한 수씩 넘겨 보세요' : '맨 끝(▶|)으로 가면 이어서 둘 수 있습니다';
+  }
   else { status = myTurn ? '내 차례' : '상대 차례'; sub = st.selected ? '움직일 곳을 누르세요' : '내 기물을 눌러 움직일 곳을 고르세요'; }
-  if (ready && !st.over && board.isCheck()) sub = `<span class="alert">장군!</span> ${stm === st.side ? '궁을 지켜야 합니다' : ''}`;
+  if (reviewing() || st.thinking) { /* 복기·생각 중에는 위 문구를 그대로 */ }
+  else if (ready && !st.over && board.isCheck()) sub = `<span class="alert">장군!</span> ${stm === st.side ? '궁을 지켜야 합니다' : ''}`;
   else if (ready && !st.over && board.isBikjang()) sub = '<span class="alert">빅장</span> 궁끼리 마주 보고 있습니다';
   $('statusText').textContent = status;
   $('subText').innerHTML = sub;
@@ -263,24 +268,36 @@ function renderPanel() {
   if (board) { const m = material(shownBoard()); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
 
   // 버튼
-  $('hintBtn').disabled = !myTurn;
-  $('passBtn').disabled = !myTurn || !passMove();
+  $('hintBtn').disabled = reviewing() ? !ready || !!st.thinking || shownBoard().isGameOver(false) : !myTurn;
+  $('passBtn').disabled = !myTurn || reviewing() || !passMove();
   $('undoBtn').disabled = !engineReady || st.thinking === 'hint' || !st.moves.some((_, i) => movedBy(i) === st.side);
   $('newBtn').disabled = !ff;
 
   // 수순
   const list = $('moveList');
+  list.classList.toggle('reviewing', reviewing());
   if (!st.notes.length) list.innerHTML = '<span class="empty">아직 둔 수가 없습니다</span>';
   else {
     let html = '';
-    const lastI = st.notes.length - 1;
-    for (let i = 0; i < st.notes.length; i += 2) {
-      const cls = (j, side) => `m ${side}` + (j === lastI ? ` last${side === 'c' ? ' c' : ''}` : '');
-      html += `<span class="n">${i / 2 + 1}</span><span class="${cls(i, 'c')}">${st.notes[i]}</span><span class="${cls(i + 1, 'h')}">${st.notes[i + 1] || ''}</span>`;
-    }
+    const curI = shownCount() - 1; // 지금 판에 보이는 마지막 수
+    const cell = (j, side) => {
+      if (j >= st.notes.length) return `<span class="m ${side}"></span>`;
+      const cls = `m ${side}` + (j === curI ? ` last${side === 'c' ? ' c' : ''}` : '');
+      return `<span class="${cls}" data-i="${j}">${st.notes[j]}</span>`;
+    };
+    for (let i = 0; i < st.notes.length; i += 2) html += `<span class="n">${i / 2 + 1}</span>${cell(i, 'c')}${cell(i + 1, 'h')}`;
     list.innerHTML = html;
-    list.scrollTop = list.scrollHeight;
+    const cur = list.querySelector('.last');
+    if (!reviewing() || !cur) list.scrollTop = list.scrollHeight;
+    else if (cur.offsetTop < list.scrollTop || cur.offsetTop + cur.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = cur.offsetTop - list.clientHeight / 2;
   }
+
+  // 복기 이동
+  const n = shownCount(), total = st.moves.length;
+  $('navFirst').disabled = $('navPrev').disabled = !board || n === 0;
+  $('navNext').disabled = $('navLast').disabled = !reviewing();
+  $('navPos').textContent = `${n} / ${total}`;
+  $('navPos').classList.toggle('on', reviewing());
 
   // 결과 창
   const res = $('result');
@@ -319,13 +336,16 @@ function play(m) {
 function askEngine(kind) {
   const lv = LEVELS[st.level];
   const full = kind === 'hint';
+  // 훈수는 화면에 보이는 국면(복기 중이면 그 수)에서 찾음
+  const moves = full ? st.moves.slice(0, shownCount()) : st.moves;
+  const rootBoard = full ? shownBoard() : board;
   st.thinking = kind; st.depth = '';
   const id = ++reqId;
-  pending = { id, kind, rootSide: sideToMove() };
+  pending = { id, kind, rootSide: rootBoard.turn() ? 'cho' : 'han', at: moves.length };
   worker.postMessage({ type: 'go', id, commands: [
     'setoption name UCI_Variant value janggi',
     `setoption name Skill Level value ${full ? 20 : lv.skill}`,
-    `position fen ${st.startFen}${st.moves.length ? ' moves ' + st.moves.join(' ') : ''}`,
+    `position fen ${st.startFen}${moves.length ? ' moves ' + moves.join(' ') : ''}`,
     `go movetime ${full ? 1500 : lv.ms}`,
   ] });
   render();
@@ -348,11 +368,11 @@ function onWorker(ev) {
   if (msg.type === 'info') { applyInfo(msg.line, pending.rootSide); renderPanel(); return; }
   if (msg.type === 'error') { st.thinking = null; pending = null; render(); $('subText').textContent = '엔진 오류: ' + msg.message; return; }
   if (msg.type === 'bestmove') {
-    const kind = pending.kind; pending = null; st.thinking = null;
-    if (msg.info) applyInfo(msg.info, sideToMove());
+    const { kind, rootSide, at } = pending; pending = null; st.thinking = null;
+    if (msg.info) applyInfo(msg.info, rootSide);
     if (!msg.move || msg.move === '(none)') { checkOver(); render(); return; }
     if (kind === 'engine') play(msg.move);
-    else { st.hint = msg.move; render(); }
+    else { st.hint = at === shownCount() ? msg.move : null; render(); }
   }
 }
 function startWorker() {
@@ -368,7 +388,7 @@ function interruptEngine() { if (st.thinking || pending) startWorker(); }
 
 // ---------- 입력 ----------
 svg.addEventListener('click', (ev) => {
-  if (!engineReady || st.over || st.thinking || sideToMove() !== st.side) return;
+  if (!engineReady || reviewing() || st.over || st.thinking || sideToMove() !== st.side) return;
   const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
   const p = pt.matrixTransform(svg.getScreenCTM().inverse());
   const at = fromXY(p.x, p.y);
@@ -381,6 +401,14 @@ svg.addEventListener('click', (ev) => {
   }
   st.selected = here && here.side === st.side ? { f: at.f, r: at.r, t: here.t, moves: legalFrom(at.f, at.r) } : null;
   render();
+});
+$('navFirst').onclick = () => setView(0);
+$('navPrev').onclick = () => setView(shownCount() - 1);
+$('navNext').onclick = () => setView(shownCount() + 1);
+$('navLast').onclick = () => setView(null);
+$('moveList').addEventListener('click', (ev) => {
+  const m = ev.target.closest('[data-i]');
+  if (m) setView(+m.dataset.i + 1);
 });
 $('hintBtn').onclick = () => { st.selected = null; askEngine('hint'); };
 $('passBtn').onclick = () => { const m = passMove(); if (m) play(m); };
