@@ -91,13 +91,13 @@ function rebuild() {
   st.notes = [];
   for (const m of st.moves) { st.notes.push(noteFor(m)); board.push(m); }
 }
-function noteFor(m) {
+function noteFor(m, b = board) {
   if (isPass(parseMove(m))) return '한수 쉼';
-  const s = board.sanMove(m, ff.Notation.JANGGI); // 예: H02-83, 잡는 수는 R71x81
+  const s = b.sanMove(m, ff.Notation.JANGGI); // 예: H02-83, 잡는 수는 R71x81
   const r = /^([A-Z])(\d+)[-x](\d+)/.exec(s);
   if (!r) return s;
   let name = KO_NAME[r[1]] || r[1];
-  if (r[1] === 'P' && !board.turn()) name = '병';
+  if (r[1] === 'P' && !b.turn()) name = '병';
   return `${r[2]}${name}${r[3]}`;
 }
 function pieceGrid(b = board) {
@@ -189,8 +189,10 @@ function render() {
   }
 
   // 훈수: 선은 기물 아래, 머리와 도착 표시는 위
-  if (st.hint) {
-    const p = parseMove(st.hint);
+  // 복기·공유 보기에서 분석 결과가 있으면 그 국면의 최선 수를 같은 화살표로 보여 줌
+  const arrow = st.hint || ((reviewing() || st.shared) && st.thinking !== 'analyze' ? st.an.best[shownCount()] : null);
+  if (arrow) {
+    const p = parseMove(arrow);
     const [x1, y1] = toXY(p.ff, p.fr), [x2, y2] = toXY(p.tf, p.tr);
     if (isPass(p)) {
       el('circle', { class: 'hint-ring', cx: x1, cy: y1, r: 58 }, ml);
@@ -271,6 +273,8 @@ function renderPanel() {
   else if (reviewing()) {
     status = st.view === 0 ? '복기 · 첫 배치' : `복기 · ${st.view}수째 ${st.notes[st.view - 1]}`;
     sub = st.over || st.shared ? '◀ ▶ 버튼으로 한 수씩 넘겨 보세요' : '맨 끝(▶|)으로 가면 이어서 둘 수 있습니다';
+    const v = st.view > 0 ? judge(st.view - 1) : null;
+    if (v) sub = judgeText(st.view - 1, v);
   }
   else if (st.shared) {
     status = st.over ? `공유받은 기보 · ${st.over.title === '무승부' ? '무승부' : (board.result(false) === '1-0' ? '초' : '한') + ' 승'}` : '공유받은 기보 · 진행 중';
@@ -283,11 +287,14 @@ function renderPanel() {
   $('statusText').textContent = status;
   $('subText').innerHTML = sub;
 
-  const pct = 50 + 50 * Math.tanh(st.evalCho / 700);
+  // 복기·공유 보기에서는 그 국면의 분석 값을, 아니면 마지막으로 엔진이 읽은 값을 보여 줌
+  const anEval = browsing && st.thinking !== 'hint' ? st.an.evals[shownCount()] : null;
+  const evCho = anEval != null ? Math.max(-5000, Math.min(5000, anEval)) : st.evalCho;
+  const pct = 50 + 50 * Math.tanh(evCho / 700);
   $('evalFill').style.width = pct.toFixed(1) + '%';
   const et = $('evalText');
-  et.textContent = st.evalText;
-  et.className = st.evalCho > 0 ? 'cho' : st.evalCho < 0 ? 'han' : '';
+  et.textContent = anEval != null ? fmtEval(anEval) : st.evalText;
+  et.className = evCho > 0 ? 'cho' : evCho < 0 ? 'han' : '';
   if (board) { const m = material(shownBoard()); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
 
   // 버튼
@@ -307,7 +314,8 @@ function renderPanel() {
     const cell = (j, side) => {
       if (j >= st.notes.length) return `<span class="m ${side}"></span>`;
       const cls = `m ${side}` + (j === curI ? ` last${side === 'c' ? ' c' : ''}` : '');
-      return `<span class="${cls}" data-i="${j}">${st.notes[j]}</span>`;
+      const v = judge(j), mk = v && MARKS[v.kind];
+      return `<span class="${cls}" data-i="${j}">${st.notes[j]}${mk ? ` <i class="q ${v.kind}" title="${mk.ko}">${mk.sym}</i>` : ''}</span>`;
     };
     for (let i = 0; i < st.notes.length; i += 2) html += `<span class="n">${i / 2 + 1}</span>${cell(i, 'c')}${cell(i + 1, 'h')}`;
     list.innerHTML = html;
@@ -598,6 +606,16 @@ function renderAnalysis() {
     $('anAcc' + k).textContent = x.acc.length ? Math.round(x.acc.reduce((a, b) => a + b, 0) / x.acc.length) + '%' : '–';
     $('anIna' + k).textContent = x.inaccuracy; $('anMis' + k).textContent = x.mistake; $('anBlu' + k).textContent = x.blunder;
   }
+}
+
+// 상태 줄에 쓸 한 수 평가 문구. 더 나은 수가 있었으면 그 수를 알려 줌
+function judgeText(j, v) {
+  const head = { best: '최선의 수', good: '무난한 수' }[v.kind] || `<span class="q ${v.kind}">${MARKS[v.kind].sym}</span> ${MARKS[v.kind].ko}`;
+  const alt = st.an.best[j];
+  if (!alt || alt === st.moves[j] || v.kind === 'best' || v.kind === 'good') return head;
+  const b = new ff.Board('janggi', st.startFen);
+  try { for (const m of st.moves.slice(0, j)) b.push(m); return `${head} · 최선은 ${noteFor(alt, b)}`; }
+  finally { b.delete(); }
 }
 
 // ---------- 입력 ----------
