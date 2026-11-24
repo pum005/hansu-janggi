@@ -81,7 +81,17 @@ python3 -m http.server 8000      # http://localhost:8000
 `tools/pages/*.html` 본문을 고친 뒤 생성기를 실행합니다. 머리말·메뉴·꼬리말은 생성기 템플릿에 있습니다.
 
 ```bash
-python3 tools/build_pages.py     # site/*/index.html, sitemap.xml, robots.txt 생성
+python3 tools/build_pages.py     # site/*/index.html, sitemap.xml, robots.txt 생성 + CSS·JS 버전 갱신
+```
+
+### 배포 전 점검
+
+CSS·JS는 하루 동안 캐시되므로, HTML이 가리키는 주소에 파일 내용 해시(`?v=…`)를 붙여 배포 직후에도 새 파일을 받게 합니다.
+`site/assets/css`나 `site/assets/js`의 파일을 고쳤다면 **배포 전에 반드시** 생성기를 다시 돌려 버전을 갱신하세요.
+
+```bash
+python3 tools/build_pages.py           # 버전 갱신 (site/index.html, 404.html 포함 모든 HTML)
+python3 tools/build_pages.py --check   # 버전이 최신인지 확인만 (틀리면 종료 코드 1)
 ```
 
 ### 엔진 빌드
