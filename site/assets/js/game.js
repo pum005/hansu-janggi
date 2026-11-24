@@ -266,7 +266,6 @@ function renderPanel() {
   // 상태
   let status, sub = '';
   if (!engineReady) { status = '엔진을 불러오는 중…'; sub = '처음 한 번만 엔진 파일(약 1MB)을 받습니다'; }
-  else if (st.over) { status = st.over.title; sub = st.over.text; }
   else if (st.thinking === 'engine') { status = '상대가 수를 읽는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
   else if (st.thinking === 'analyze') { status = '대국을 분석하는 중'; sub = `국면 ${anDone} / ${anTotal} · 중지해도 끝난 부분은 남습니다`; }
   else if (st.thinking === 'hint') { status = '훈수를 찾는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
@@ -280,6 +279,7 @@ function renderPanel() {
     status = st.over ? `공유받은 기보 · ${st.over.title === '무승부' ? '무승부' : (board.result(false) === '1-0' ? '초' : '한') + ' 승'}` : '공유받은 기보 · 진행 중';
     sub = `전체 ${st.moves.length}수 · ◀ 버튼으로 처음부터 넘겨 보세요`;
   }
+  else if (st.over) { status = st.over.title; sub = st.over.text; } // 분석·복기 중이 아닐 때만 결과 문구
   else { status = myTurn ? '내 차례' : '상대 차례'; sub = st.selected ? '움직일 곳을 누르세요' : '내 기물을 눌러 움직일 곳을 고르세요'; }
   if (browsing || st.thinking) { /* 복기·생각 중에는 위 문구를 그대로 */ }
   else if (ready && !st.over && board.isCheck()) sub = `<span class="alert">장군!</span> ${stm === st.side ? '궁을 지켜야 합니다' : ''}`;
@@ -287,8 +287,8 @@ function renderPanel() {
   $('statusText').textContent = status;
   $('subText').innerHTML = sub;
 
-  // 복기·공유 보기에서는 그 국면의 분석 값을, 아니면 마지막으로 엔진이 읽은 값을 보여 줌
-  const anEval = browsing && st.thinking !== 'hint' ? st.an.evals[shownCount()] : null;
+  // 그 국면의 분석 값이 있으면 그것을, 아니면 마지막으로 엔진이 읽은 값을 보여 줌
+  const anEval = st.thinking !== 'hint' && st.thinking !== 'engine' ? st.an.evals[shownCount()] : null;
   const evCho = anEval != null ? Math.max(-5000, Math.min(5000, anEval)) : st.evalCho;
   const pct = 50 + 50 * Math.tanh(evCho / 700);
   $('evalFill').style.width = pct.toFixed(1) + '%';
@@ -433,6 +433,7 @@ const parseScore = (line, side) => { // 엔진 info 줄 → 초 기준 점수
   return null;
 };
 function fmtEval(cp) {
+  if (Math.abs(cp) === MATE) return `${cp > 0 ? '초' : '한'} 승`; // 이미 끝난 국면
   if (Math.abs(cp) > MATE / 2) return `${cp > 0 ? '초' : '한'} ${MATE - Math.abs(cp)}수 외통`;
   const v = cp / 100;
   return (v > 0 ? '초 +' : v < 0 ? '한 +' : '') + Math.abs(v).toFixed(1);
