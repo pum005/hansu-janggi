@@ -78,8 +78,8 @@ function rebuild() {
 }
 function noteFor(m) {
   if (isPass(parseMove(m))) return '한수 쉼';
-  const s = board.sanMove(m, ff.Notation.JANGGI); // 예: H02-83
-  const r = /^([A-Z])(\d+)-(\d+)$/.exec(s);
+  const s = board.sanMove(m, ff.Notation.JANGGI); // 예: H02-83, 잡는 수는 R71x81
+  const r = /^([A-Z])(\d+)[-x](\d+)/.exec(s);
   if (!r) return s;
   let name = KO_NAME[r[1]] || r[1];
   if (r[1] === 'P' && !board.turn()) name = '병';
