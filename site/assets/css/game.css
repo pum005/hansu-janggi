@@ -11,7 +11,7 @@
   max-width: clamp(460px, calc((100svh - var(--header-h) - 150px) * 0.906), 680px);
 }
 .panel { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.settings-card { order: 1; } .actions-card { order: 2; } .status-card { order: 3; } .moves-card { order: 4; } .game-ad { order: 5; }
+.settings-card { order: 1; } .actions-card { order: 2; } .status-card { order: 3; } .analysis-card { order: 4; } .moves-card { order: 5; } .game-ad { order: 6; }
 
 /* 태블릿: 판 위, 패널은 아래 2열 */
 @media (max-width: 1023px) {
@@ -19,9 +19,9 @@
   .board-col { max-width: 620px; }
   .panel {
     display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start;
-    grid-template-areas: "actions status" "settings moves" "ad ad";
+    grid-template-areas: "actions status" "analysis analysis" "settings moves" "ad ad";
   }
-  .actions-card { grid-area: actions; } .status-card { grid-area: status; }
+  .actions-card { grid-area: actions; } .status-card { grid-area: status; } .analysis-card { grid-area: analysis; }
   .settings-card { grid-area: settings; } .moves-card { grid-area: moves; } .game-ad { grid-area: ad; }
 }
 /* 모바일: 한 줄 */
@@ -29,7 +29,7 @@
   .game { padding: 12px 12px 24px; gap: 12px; }
   .board-col { gap: 8px; }
   .panel { display: flex; gap: 12px; align-items: stretch; }
-  .actions-card { order: 1; } .status-card { order: 2; } .moves-card { order: 3; } .settings-card { order: 4; } .game-ad { order: 5; }
+  .actions-card { order: 1; } .status-card { order: 2; } .analysis-card { order: 3; } .moves-card { order: 4; } .settings-card { order: 5; } .game-ad { order: 6; }
   .card { padding: 16px; }
 }
 
@@ -161,3 +161,50 @@
 .game-ad.on { min-height: 250px; }
 @media (max-width: 1023px) { .game-ad.on { min-height: 90px; } }
 @media (max-width: 639px) { .game-ad.on { min-height: 100px; margin-top: 8px; } }
+
+/* ---------- 대국 분석 ---------- */
+.analysis-card[hidden] { display: none; }
+.an-empty { font-size: 13px; color: var(--sub); }
+.an-progress { display: flex; align-items: center; gap: 10px; }
+.an-progress[hidden] { display: none; }
+.an-bar { flex: 1; height: 6px; border-radius: 4px; background: var(--soft); overflow: hidden; }
+.an-bar span { display: block; height: 100%; width: 0; background: var(--blue); transition: width .2s; }
+.an-count { font-size: 12.5px; color: var(--sub); font-variant-numeric: tabular-nums; }
+.an-progress .mini { margin: 0; }
+.an-sum { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.an-sum[hidden] { display: none; }
+.an-sum th, .an-sum td { padding: 6px 4px; text-align: right; font-weight: 400; }
+.an-sum thead th { font-size: 12px; color: var(--sub); border-bottom: 1px solid var(--soft); }
+.an-sum tbody th { text-align: left; font-weight: 600; white-space: nowrap; }
+.an-sum tbody th .chip { display: inline-grid; width: 20px; height: 20px; font-size: 11px; border-radius: 5px; margin-right: 6px; vertical-align: -5px; }
+.an-sum td:nth-child(2) { font-weight: 700; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 형세 그래프: 위 = 초 유리, 아래 = 한 유리 */
+.an-chart { position: relative; margin-top: 4px; }
+.an-chart[hidden] { display: none; }
+#anChart { display: block; width: 100%; height: 96px; cursor: pointer; touch-action: pan-y; }
+#anChart .mid { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 3 3; }
+#anChart .fill-cho { fill: var(--cho); opacity: .16; }
+#anChart .fill-han { fill: var(--han); opacity: .16; }
+#anChart .line { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+#anChart .cur { stroke: var(--blue); stroke-width: 2; }
+#anChart .hover { stroke: var(--sub); stroke-width: 1; }
+#anChart .dot { stroke: var(--card); stroke-width: 2; }
+#anChart .dot.cho { fill: var(--cho); } #anChart .dot.han { fill: var(--han); }
+.an-lab { position: absolute; left: 4px; font-size: 11px; color: var(--sub); pointer-events: none; line-height: 1; }
+.an-lab.top { top: 4px; } .an-lab.bot { bottom: 4px; }
+.an-tip {
+  position: absolute; top: -6px; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap;
+  background: var(--ink); color: #fff; border-radius: 8px; padding: 5px 9px; font-size: 12px; line-height: 1.35;
+  display: flex; flex-direction: column; align-items: center; z-index: 2;
+}
+.an-tip[hidden] { display: none; }
+.an-tip strong { font-size: 13px; font-variant-numeric: tabular-nums; }
+.an-tip span { opacity: .75; }
+
+/* 수 평가 표시: 부정확 ?! · 실수 ? · 패착 ?? (기호로도 구분되게) */
+.q { font-style: normal; font-weight: 800; font-size: 12px; margin-left: 2px; }
+.q.inaccuracy { color: #b7791f; }
+.q.mistake { color: #dd6b20; }
+.q.blunder { color: var(--han); }

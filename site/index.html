@@ -54,7 +54,7 @@
           <strong id="resultTitle"></strong>
           <p id="resultText"></p>
           <div class="row"><button class="btn" id="resultUndo">무르기</button><button class="btn primary" id="resultNew">새 대국</button></div>
-          <div class="links"><button class="close" id="resultReview">처음부터 복기</button><button class="close" id="resultClose">판 보기</button></div>
+          <div class="links"><button class="close" id="resultReview">복기·분석</button><button class="close" id="resultClose">판 보기</button></div>
         </div>
       </div>
     </div>
@@ -101,6 +101,28 @@
       <div class="evalbar"><span id="evalFill"></span></div>
       <div class="evalrow"><span>초 유리</span><span>한 유리</span></div>
       <div class="material" id="materialText"></div>
+    </section>
+
+    <section class="card analysis-card" id="analysisCard" aria-label="대국 분석" hidden>
+      <div class="label">대국 분석 <button class="mini" id="analyzeBtn" disabled>분석하기</button></div>
+      <p class="an-empty" id="anEmpty">엔진이 국면마다 다시 읽어 실수와 최선 수를 찾아 줍니다. 한 수에 0.3초쯤 걸립니다.</p>
+      <div class="an-progress" id="anProgress" hidden>
+        <div class="an-bar"><span id="anFill"></span></div>
+        <span class="an-count" id="anCount"></span>
+        <button class="mini" id="anStop">중지</button>
+      </div>
+      <div class="an-chart" id="anChartWrap" hidden>
+        <svg id="anChart" role="img" aria-label="수마다 형세 변화. 위로 갈수록 초, 아래로 갈수록 한이 유리합니다. 누르면 그 수로 이동합니다."></svg>
+        <span class="an-lab top" aria-hidden="true">초 유리</span><span class="an-lab bot" aria-hidden="true">한 유리</span>
+        <div class="an-tip" id="anTip" hidden><strong id="anTipVal"></strong><span id="anTipLab"></span></div>
+      </div>
+      <table class="an-sum" id="anSum" hidden>
+        <thead><tr><th scope="col"><span class="sr">진영</span></th><th scope="col">정확도</th><th scope="col">부정확</th><th scope="col">실수</th><th scope="col">패착</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><span class="chip cho">楚</span>초</th><td id="anAccC"></td><td id="anInaC"></td><td id="anMisC"></td><td id="anBluC"></td></tr>
+          <tr><th scope="row"><span class="chip han">漢</span>한</th><td id="anAccH"></td><td id="anInaH"></td><td id="anMisH"></td><td id="anBluH"></td></tr>
+        </tbody>
+      </table>
     </section>
 
     <section class="card moves-card">
