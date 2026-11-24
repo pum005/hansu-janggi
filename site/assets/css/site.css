@@ -95,6 +95,11 @@ button { cursor: pointer; }
 .tool[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
 .tool-ic { font-weight: 900; font-size: 15px; line-height: 1; }
 .tool svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tool .off { display: none; }
+.tool[aria-pressed="false"] .on { display: none; }
+.tool[aria-pressed="false"] .off { display: inline; }
+#soundBtn[aria-pressed="false"] { color: var(--sub); }
+@media (max-width: 400px) { .t-wide { display: none; } } /* 좁은 휴대폰: '가 글씨'로 줄임 */
 @media (max-width: 767px) {
   .hd-tools { margin-right: 6px; }
   .tool { height: 40px; padding: 0 10px; font-size: 14px; }
