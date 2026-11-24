@@ -659,7 +659,8 @@ $('resultUndo').onclick = undo;
 $('newBtn').onclick = () => newGame();
 $('resultNew').onclick = () => newGame();
 $('resultClose').onclick = () => { resultDismissed = true; renderPanel(); };
-$('resultReview').onclick = () => { resultDismissed = true; setView(0); };
+// 결과 창에서 바로 첫 배치부터 복기하며, 아직 분석 안 했으면 분석도 시작
+$('resultReview').onclick = () => { resultDismissed = true; setView(0); renderPanel(); if (!analyzedAll()) startAnalysis(); };
 
 // 방향키로 복기: ← → 한 수, Home/End 처음·최신 (입력칸에 있을 때는 제외)
 document.addEventListener('keydown', (ev) => {
