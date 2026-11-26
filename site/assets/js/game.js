@@ -28,6 +28,11 @@ const svg = $('board');
 let ff = null, board = null, worker = null, engineReady = false;
 let viewBoard = null; // 복기 중에 보여 줄 판 (진행 중인 판 board와 따로 둠)
 let reqId = 0, pending = null, resultDismissed = false;
+// 휴대폰은 '복기'를 누르면 최신 수부터 넘겨 보는 복기 화면이 됨 (st.view가 null이어도 복기 중일 수 있음)
+let mrv = false;
+const mq = matchMedia('(max-width: 639px)');
+const isMobile = () => mq.matches;
+const BAD = ['inaccuracy', 'mistake', 'blunder'];
 const st = {
   side: 'cho', level: 2, mySetup: '마상상마', engSetup: '마상상마',
   startFen: '', moves: [], notes: [],
@@ -191,7 +196,11 @@ function render() {
 
   // 훈수: 선은 기물 아래, 머리와 도착 표시는 위
   // 복기·공유 보기에서 분석 결과가 있으면 그 국면의 최선 수를 같은 화살표로 보여 줌
-  const arrow = st.hint || ((reviewing() || st.shared) && st.thinking !== 'analyze' ? st.an.best[shownCount()] : null);
+  let arrow = st.hint || ((reviewing() || st.shared) && st.thinking !== 'analyze' ? st.an.best[shownCount()] : null);
+  if (isMobile() && mBrowsing()) {
+    const j = shownCount() - 1, v = j >= 0 ? judge(j) : null;
+    arrow = v && BAD.includes(v.kind) && st.an.best[j] !== st.moves[j] ? st.an.best[j] : null;
+  }
   if (arrow) {
     const p = parseMove(arrow);
     const [x1, y1] = toXY(p.ff, p.fr), [x2, y2] = toXY(p.tf, p.tr);
@@ -318,6 +327,8 @@ function renderPanel() {
   const et = $('evalText');
   et.textContent = anEval != null ? fmtEval(anEval) : st.evalText;
   et.className = evCho > 0 ? 'cho' : evCho < 0 ? 'han' : '';
+  $('mEvalFill').style.width = pct.toFixed(1) + '%';
+  $('mEval').textContent = et.textContent; $('mEval').className = 'm-eval ' + et.className;
   if (board) { const m = material(shownBoard()); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
 
   // 버튼
@@ -706,54 +717,177 @@ function judgeText(j, v) {
   finally { b.delete(); }
 }
 
-// ---------- 휴대폰 하단 버튼 ----------
-// 상황(대국 중 / 복기 중 / 대국 끝 / 분석 중)에 맞는 버튼 줄만 보여 줌
-function renderMobileBar(browsing) {
-  const bar = $('mbar');
-  const mode = st.thinking === 'analyze' ? 'analyze' : browsing ? 'review' : st.over ? 'over' : 'play';
-  bar.dataset.mode = mode;
-  const n = shownCount();
+// ---------- 휴대폰: 판 아래 조작 ----------
+// 대국 중·대국 끝: 상태 줄 + 버튼 4개 / 복기: 설명 카드 + 형세 막대 + 이동 버튼
+const mBrowsing = () => mrv || reviewing() || st.shared;
+function renderMobileBar() {
+  $('hdrNew').disabled = !ff;
+  if (!isMobile()) return;
+  const rv = mBrowsing();
+  $('mbar').dataset.mode = rv ? 'review' : st.over ? 'over' : 'play';
+  document.querySelector('.board-col').dataset.m = rv ? 'review' : 'play';
+  if (rv) { renderRv(); return; }
+  const res = st.over && board ? board.result(false) : null;
+  const draw = res === '1/2-1/2', win = !!res && !draw && (res === '1-0') === (st.side === 'cho');
+  $('mbStatusBox').classList.toggle('win', !!st.over && win);
+  $('mbStatusBox').classList.toggle('lose', !!st.over && !win && !draw);
   $('mbHint').disabled = $('hintBtn').disabled;
-  $('mbUndo').disabled = $('mbUndo2').disabled = $('undoBtn').disabled;
-  $('mbPass').disabled = $('passBtn').disabled;
-  $('mbNew').disabled = $('mbNew2').disabled = $('newBtn').disabled;
-  $('mbBack').disabled = !board || !st.moves.length || !!st.thinking;
-  $('mbPrev').disabled = n === 0;
-  $('mbNext').disabled = !reviewing();
-  $('mbHint2').disabled = $('hintBtn').disabled;
-  const canAnalyze = !analyzedAll() && st.moves.length > 0;
-  $('mbAnalyze').hidden = !canAnalyze;
-  $('mbAnalyze').disabled = !engineReady || !!st.thinking;
-  $('mbAnalyze').parentElement.classList.toggle('no-an', !canAnalyze);
-  $('mbExit').textContent = st.shared ? '내 대국으로' : '복기 끝내기';
-  $('mbReview').disabled = !st.moves.length;
+  $('mbUndo').disabled = $('undoBtn').disabled;
+  $('mbPass').hidden = $('passBtn').disabled;
+  $('mbReview').disabled = !board || !st.moves.length || !!st.thinking;
   $('mbShare').disabled = $('shareBtn').disabled;
-  if (mode === 'analyze') $('mbFill').style.width = (anTotal ? (100 * anDone / anTotal) : 0).toFixed(1) + '%';
+  $('mbNew').disabled = !ff;
 }
-$('mbHint').onclick = $('mbHint2').onclick = () => $('hintBtn').click();
-$('mbUndo').onclick = $('mbUndo2').onclick = () => $('undoBtn').click();
+function enterReview() {
+  if (!board || !st.moves.length || st.thinking) return;
+  mrv = true; st.selected = null; st.hint = null;
+  render();
+  if (st.over && !analyzedAll()) startAnalysis(); // 끝난 대국은 바로 실수 찾기
+}
+function exitReview() {
+  if (st.thinking === 'analyze') stopAnalysis();
+  mrv = false;
+  if (st.view !== null) setView(null); else render();
+}
+$('mbHint').onclick = () => $('hintBtn').click();
+$('mbUndo').onclick = () => $('undoBtn').click();
 $('mbPass').onclick = () => $('passBtn').click();
-$('mbBack').onclick = () => setView(shownCount() - 1);
-$('mbPrev').onclick = () => setView(shownCount() - 1);
-$('mbNext').onclick = () => setView(shownCount() + 1);
-$('mbExit').onclick = () => (st.shared ? $('sharedExit').click() : setView(null));
-$('mbAnalyze').onclick = startAnalysis;
-$('mbStop').onclick = stopAnalysis;
-$('mbReview').onclick = () => { setView(0); if (!analyzedAll()) startAnalysis(); };
-$('mbShare').onclick = () => $('shareBtn').click();
-$('mbNew').onclick = $('mbNew2').onclick = () => openNewDialog();
+$('mbReview').onclick = enterReview;
+// 휴대폰 공유 창(카톡 등)만 씀. 공유 창을 못 여는 브라우저(http 주소, 일부 앱 안 브라우저)에서는 링크만 복사
+$('mbShare').onclick = async () => {
+  const url = shareUrl();
+  if (!url) return;
+  if (navigator.share) {
+    try { await navigator.share({ title: '한수 장기 기보', url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(url); toast('링크를 복사했습니다. 카톡에 붙여 넣어 보내세요'); }
+  catch (e) { toast('이 브라우저에서는 공유할 수 없습니다'); }
+};
+$('mbNew').onclick = $('hdrNew').onclick = () => openNewDialog();
 
-// ---------- 새 대국 설정 화면 (휴대폰) ----------
-// 큰 버튼으로 실력·진영을 고르고 '대국 시작'. 고른 값은 시작할 때만 적용되고, 취소하면 그대로
-const ng = { level: 2, side: 'cho' };
+// 복기 화면
+const LABEL = { best: '최선의 수', good: '좋은 수', inaccuracy: '아쉬운 수', mistake: '실수', blunder: '큰 실수' };
+const plainMove = (note) => { const r = /^(\d+)(\D+?)(\d+)$/.exec(note); return r ? `${r[2]} ${r[1]}→${r[3]}` : note; };
+function noteAt(j, m) { // j수째 앞 국면에서 m을 두었을 때의 기보 표기
+  const b = new ff.Board('janggi', st.startFen);
+  try { for (const x of st.moves.slice(0, j)) b.push(x); return noteFor(m, b); } finally { b.delete(); }
+}
+function nextMiss(n) { // 지금 보는 수 다음의 실수·큰 실수 (수 번호 j, 없으면 -1)
+  for (let j = n; j < st.moves.length; j++) { const v = judge(j); if (v && (v.kind === 'mistake' || v.kind === 'blunder')) return j; }
+  return -1;
+}
+function rvCardHtml(n) {
+  if (st.thinking === 'analyze') {
+    const pct = anTotal ? 100 * anDone / anTotal : 0;
+    return `<div class="rv-h"><b>실수 찾는 중</b><span class="rv-mv">${anDone} / ${anTotal}</span></div>`
+      + `<div class="rv-prog"><span style="width:${pct.toFixed(1)}%"></span></div>`
+      + '<p class="rv-note">그만해도 읽은 데까지는 남습니다.</p>';
+  }
+  if (n === 0) return '<div class="rv-h"><b>첫 배치</b></div><p class="rv-note wrap">‘다음 ▶’을 누르거나 아래 막대를 밀어서 한 수씩 넘겨 보세요.</p>';
+  const j = n - 1, side = movedBy(j), v = judge(j);
+  const who = st.shared ? (side === 'cho' ? '초가' : '한이') : side === st.side ? '내가' : 'AI가';
+  let html = `<div class="rv-h"><span class="chip ${side}">${side === 'cho' ? '楚' : '漢'}</span><b>${n}수째</b><span>${who} 둔 수</span><span class="rv-mv">${plainMove(st.notes[j])}</span></div>`;
+  if (!v) return html + `<p class="rv-note wrap">‘실수 찾기’를 누르면 이 수가 좋은 수였는지 AI가 알려 줍니다.</p>`;
+  const pct = (cp) => Math.round((side === 'cho' ? winCho(cp) : 1 - winCho(cp)) * 100);
+  const whose = st.shared ? (side === 'cho' ? '초' : '한') : side === st.side ? '내' : 'AI';
+  html += `<div class="rv-j"><span class="rv-badge ${v.kind}">${LABEL[v.kind]}</span><span>${whose} 승률 ${pct(st.an.evals[j])}% → ${pct(st.an.evals[j + 1])}%</span></div>`;
+  const alt = st.an.best[j];
+  if (BAD.includes(v.kind) && alt && alt !== st.moves[j]) html += `<p class="rv-alt">더 좋은 수 <b>${plainMove(noteAt(j, alt))}</b> <i></i> 판의 파란 화살표</p>`;
+  else html += `<p class="rv-note">${v.kind === 'best' ? 'AI가 고른 수와 같습니다.' : '흐름을 잃지 않은 수입니다.'}</p>`;
+  return html;
+}
+function renderRv() {
+  const n = shownCount(), N = st.moves.length;
+  $('rvTitle').textContent = st.shared ? '공유받은 기보' : '복기';
+  $('rvPos').textContent = n === 0 ? `첫 배치 · 전체 ${N}수` : `${n} / ${N}수`;
+  $('rvExit').textContent = st.shared ? '내 대국으로' : '끝내기';
+  $('rvPrev').disabled = n === 0;
+  $('rvNext').disabled = n >= N;
+  const more = $('rvMore');
+  if (st.thinking === 'analyze') { more.dataset.act = 'stop'; more.textContent = '그만'; more.disabled = false; }
+  else if (analyzedAll()) { more.dataset.act = 'next'; more.textContent = '다음 실수 ▶'; more.disabled = nextMiss(n) < 0; }
+  else { more.dataset.act = 'analyze'; more.textContent = '실수 찾기'; more.disabled = !engineReady || !!st.thinking || !N; }
+  more.classList.toggle('hint', more.dataset.act !== 'stop');
+  $('rvCard').innerHTML = rvCardHtml(n);
+  renderRvChart();
+}
+$('rvPrev').onclick = () => setView(shownCount() - 1);
+$('rvNext').onclick = () => setView(shownCount() + 1);
+$('rvMore').onclick = () => {
+  const act = $('rvMore').dataset.act;
+  if (act === 'stop') stopAnalysis();
+  else if (act === 'analyze') startAnalysis();
+  else { const j = nextMiss(shownCount()); if (j >= 0) setView(j + 1); }
+};
+$('rvExit').onclick = () => (st.shared ? $('sharedExit').click() : exitReview());
+
+// 형세 막대: 분석 전에는 진행 막대, 분석 뒤에는 형세 그래프. 누르거나 밀어서 수를 옮김
+const RV = { pad: 10 };
+function rvGeom() { // 실제 크기에 맞춰 그려 원·선이 찌그러지지 않게
+  const c = $('rvChart'), W = c.clientWidth || 300, H = c.clientHeight || 56, N = Math.max(1, st.moves.length);
+  return { W, H, N, x: (i) => RV.pad + (i / N) * (W - 2 * RV.pad), y: (cp) => 7 + (1 - winCho(cp)) * (H - 14) };
+}
+function renderRvChart() {
+  const c = $('rvChart'), g = rvGeom(), ev = st.an.evals, n = shownCount(), N = st.moves.length;
+  c.setAttribute('viewBox', `0 0 ${g.W} ${g.H}`);
+  c.setAttribute('aria-valuemax', N); c.setAttribute('aria-valuenow', n);
+  c.setAttribute('aria-valuetext', n === 0 ? '첫 배치' : `${n}수째`);
+  c.innerHTML = '';
+  const mid = g.y(0);
+  const pts = [];
+  for (let i = 0; i <= N && ev[i] != null; i++) pts.push(i);
+  if (pts.length >= 2) {
+    const last = pts[pts.length - 1];
+    const line = pts.map((i, k) => `${k ? 'L' : 'M'}${g.x(i).toFixed(1)},${g.y(ev[i]).toFixed(1)}`).join(' ');
+    const area = `${line} L${g.x(last).toFixed(1)},${mid.toFixed(1)} L${g.x(0).toFixed(1)},${mid.toFixed(1)} Z`;
+    const defs = el('defs', {}, c);
+    el('rect', { x: 0, y: 0, width: g.W, height: mid }, el('clipPath', { id: 'rvClipTop' }, defs));
+    el('rect', { x: 0, y: mid, width: g.W, height: g.H - mid }, el('clipPath', { id: 'rvClipBot' }, defs));
+    el('path', { class: 'fill-cho', d: area, 'clip-path': 'url(#rvClipTop)' }, c);
+    el('path', { class: 'fill-han', d: area, 'clip-path': 'url(#rvClipBot)' }, c);
+    el('line', { class: 'mid', x1: 0, x2: g.W, y1: mid, y2: mid }, c);
+    el('path', { class: 'line', d: line }, c);
+    for (let j = 0; j < last; j++) {
+      const v = judge(j);
+      if (v && (v.kind === 'mistake' || v.kind === 'blunder')) el('circle', { class: `miss ${v.kind}`, cx: g.x(j + 1), cy: g.y(ev[j + 1]), r: v.kind === 'blunder' ? 5 : 4 }, c);
+    }
+  } else {
+    el('line', { class: 'base', x1: g.x(0), x2: g.x(N), y1: mid, y2: mid }, c);
+    el('line', { class: 'done', x1: g.x(0), x2: g.x(n), y1: mid, y2: mid }, c);
+  }
+  el('line', { class: 'cur', x1: g.x(n), x2: g.x(n), y1: 0, y2: g.H }, c);
+  el('circle', { class: 'knob', cx: g.x(n), cy: ev[n] != null && pts.length >= 2 ? g.y(ev[n]) : mid, r: 8 }, c);
+}
+let rvDrag = false;
+function rvIndexAt(ev) {
+  const r = $('rvChart').getBoundingClientRect(), g = rvGeom();
+  return Math.max(0, Math.min(st.moves.length, Math.round(((ev.clientX - r.left) - RV.pad) / (g.W - 2 * RV.pad) * g.N)));
+}
+$('rvChart').addEventListener('pointerdown', (ev) => { rvDrag = true; $('rvChart').setPointerCapture(ev.pointerId); setView(rvIndexAt(ev)); });
+$('rvChart').addEventListener('pointermove', (ev) => { if (rvDrag) setView(rvIndexAt(ev)); });
+for (const t of ['pointerup', 'pointercancel']) $('rvChart').addEventListener(t, () => { rvDrag = false; });
+if (window.ResizeObserver) new ResizeObserver(() => { if (isMobile() && mBrowsing()) renderRvChart(); }).observe($('rvChart'));
+mq.addEventListener('change', () => { if (!isMobile()) mrv = false; if (board) render(); });
+
+// ---------- 새 대국 시트 (휴대폰) ----------
+// 고른 값은 '대국 시작'을 눌러야 적용되고, 닫으면 그대로
+const LEVEL_DESC = ['처음 배우는 분께 맞습니다. 실수도 곧잘 합니다.', '규칙을 아는 분께 맞습니다.', '장기 좀 두는 분께 맞습니다.', '있는 힘껏 둡니다. 이기기 아주 어렵습니다.'];
+const ng = { level: 2, side: 'cho', my: SETUPS[0], eng: SETUPS[0] };
 let ngReturnFocus = null;
+const suHanja = (v) => (v === '무작위' ? '？' : v.replace(/마/g, '馬').replace(/상/g, '象'));
+const suButtons = (list) => list.map((v) => `<button type="button" data-su="${v}" aria-label="${v}"><span class="hj4">${suHanja(v)}</span><small>${v}</small></button>`).join('');
+$('ngMySu').innerHTML = suButtons(SETUPS);
+$('ngEngSu').innerHTML = suButtons([...SETUPS, '무작위']);
 function paintNewDialog() {
   document.querySelectorAll('#ngLevel button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.level === ng.level)));
   document.querySelectorAll('#ngSide button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === ng.side)));
+  document.querySelectorAll('#ngMySu button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.su === ng.my)));
+  document.querySelectorAll('#ngEngSu button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.su === ng.eng)));
+  $('ngLevelDesc').textContent = LEVEL_DESC[ng.level];
 }
 function openNewDialog() {
-  ng.level = st.level; ng.side = chosenSide;
-  $('ngMy').value = $('mySetup').value; $('ngEng').value = $('engSetup').value;
+  ng.level = st.level; ng.side = chosenSide; ng.my = $('mySetup').value; ng.eng = $('engSetup').value;
   $('ngWarn').hidden = !(st.moves.length && !st.over && !st.shared); // 두던 대국이 있을 때만 경고
   paintNewDialog();
   ngReturnFocus = document.activeElement;
@@ -769,19 +903,30 @@ function closeNewDialog() {
 const newDialogOpen = () => !$('newDialog').hidden;
 document.querySelectorAll('#ngLevel button').forEach((b) => { b.onclick = () => { ng.level = +b.dataset.level; paintNewDialog(); }; });
 document.querySelectorAll('#ngSide button').forEach((b) => { b.onclick = () => { ng.side = b.dataset.side; paintNewDialog(); }; });
-$('ngCancel').onclick = closeNewDialog;
+$('ngMySu').onclick = (ev) => { const b = ev.target.closest('[data-su]'); if (b) { ng.my = b.dataset.su; paintNewDialog(); } };
+$('ngEngSu').onclick = (ev) => { const b = ev.target.closest('[data-su]'); if (b) { ng.eng = b.dataset.su; paintNewDialog(); } };
+$('ngCancel').onclick = $('ngDim').onclick = closeNewDialog;
 $('ngStart').onclick = () => {
   setLevel(ng.level); setSide(ng.side);
-  $('mySetup').value = $('ngMy').value; $('engSetup').value = $('ngEng').value;
+  $('mySetup').value = ng.my; $('engSetup').value = ng.eng;
   closeNewDialog();
   newGame();
   window.scrollTo(0, 0);
 };
 $('newDialog').addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { ev.stopPropagation(); closeNewDialog(); } });
 
+// ---------- 짧은 알림 ----------
+let toastTimer = 0;
+function toast(text) {
+  const t = $('toast');
+  t.textContent = text; t.hidden = true; void t.offsetWidth; t.hidden = false; // 연달아 눌러도 다시 나타나게
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 2800);
+}
+
 // ---------- 입력 ----------
 svg.addEventListener('click', (ev) => {
-  if (!engineReady || st.shared || reviewing() || st.over || st.thinking || sideToMove() !== st.side) return;
+  if (!engineReady || st.shared || reviewing() || mrv || st.over || st.thinking || sideToMove() !== st.side) return;
   const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
   const p = pt.matrixTransform(svg.getScreenCTM().inverse());
   const at = fromXY(p.x, p.y);
@@ -852,10 +997,10 @@ document.querySelectorAll('#levelSeg button').forEach((b) => { b.onclick = () =>
 
 const fillSetup = (id, withRandom) => { $(id).innerHTML = SETUPS.map((v) => `<option>${v}</option>`).join('') + (withRandom ? '<option>무작위</option>' : ''); };
 fillSetup('mySetup', false); fillSetup('engSetup', true);
-fillSetup('ngMy', false); fillSetup('ngEng', true);
 
 function newGame() {
   leaveShared();
+  mrv = false;
   st.side = chosenSide;
   st.mySetup = $('mySetup').value;
   st.engSetup = $('engSetup').value;
@@ -910,6 +1055,7 @@ function decodeGame(hash) {
 }
 function openShared(g) {
   st.shared = true;
+  mrv = false;
   Object.assign(st, { side: g.side, startFen: g.startFen, moves: g.moves, selected: null, hint: null, an: { evals: [], best: [] } });
   const su = setupsFromFen(g.startFen);
   st.mySetup = g.side === 'cho' ? su.cho : su.han; st.engSetup = g.side === 'cho' ? su.han : su.cho;
@@ -927,29 +1073,28 @@ $('sharedExit').onclick = () => {
   if (!restoreSaved()) newGame();
   else if (engineReady && !st.over && sideToMove() !== st.side) askEngine('engine');
 };
-// 휴대폰은 공유 창, 컴퓨터는 클립보드 복사. 둘 다 안 되면 상태 줄에 주소를 보여 줌
-let shareTimer = 0;
-$('shareBtn').onclick = async () => {
+// 컴퓨터 화면의 '기보 공유': 터치 기기는 공유 창, 아니면 클립보드 복사. 둘 다 안 되면 onFail로 주소를 직접 보여 줌
+async function shareGame(onCopied, onFail) {
   const url = shareUrl();
   if (!url) return;
-  const btn = $('shareBtn');
-  const done = (text) => {
-    btn.textContent = text; btn.classList.add('done');
-    $('mbShare').textContent = '링크를 복사했습니다 ✓';
-    clearTimeout(shareTimer);
-    shareTimer = setTimeout(() => { btn.textContent = '기보 공유'; btn.classList.remove('done'); $('mbShare').textContent = '기보 보내기 (카톡 등)'; }, 2000);
-  };
   if (navigator.share && matchMedia('(pointer: coarse)').matches) {
     try { await navigator.share({ title: '한수 장기 기보', url }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }
   }
-  try { await navigator.clipboard.writeText(url); done('링크 복사됨'); }
-  catch (e) {
-    $('subText').innerHTML = '';
-    const a = document.createElement('a'); a.href = url; a.textContent = url; a.className = 'share-url';
-    $('subText').append('이 주소를 복사해 보내세요: ', a);
-  }
-};
+  try { await navigator.clipboard.writeText(url); onCopied(); }
+  catch (e) { onFail(url); }
+}
+let shareTimer = 0;
+$('shareBtn').onclick = () => shareGame(() => {
+  const btn = $('shareBtn');
+  btn.textContent = '링크 복사됨'; btn.classList.add('done');
+  clearTimeout(shareTimer);
+  shareTimer = setTimeout(() => { btn.textContent = '기보 공유'; btn.classList.remove('done'); }, 2000);
+}, (url) => {
+  $('subText').innerHTML = '';
+  const a = document.createElement('a'); a.href = url; a.textContent = url; a.className = 'share-url';
+  $('subText').append('이 주소를 복사해 보내세요: ', a);
+});
 window.addEventListener('hashchange', () => { if (/^#g=/.test(location.hash)) location.reload(); });
 
 // ---------- 이어하기 (브라우저 저장소) ----------
@@ -969,6 +1114,7 @@ function load() {
 function restoreSaved() {
   const data = load();
   if (!data || !data.startFen) return false;
+  mrv = false;
   try {
     // st를 먼저 채워야 setLevel()이 저장할 때 다른 판으로 덮어쓰지 않음
     const an = data.an && Array.isArray(data.an.evals) && Array.isArray(data.an.best) ? data.an : { evals: [], best: [] };
