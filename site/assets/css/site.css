@@ -52,7 +52,7 @@ button { cursor: pointer; }
   -webkit-backdrop-filter: saturate(160%) blur(12px);
   border-bottom: 1px solid var(--line);
 }
-.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: -0.02em; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: -0.02em; white-space: nowrap; }
 .logo-mark {
   width: 30px; height: 30px; display: grid; place-items: center;
   font-family: var(--font-hanja); font-weight: 900; font-size: 16px; color: #fff; background: var(--ink);
@@ -69,6 +69,37 @@ button { cursor: pointer; }
 .menu-open .menu-btn span:nth-child(2) { opacity: 0; }
 .menu-open .menu-btn span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
+/* 언어 고르기 (한국어 / English): 지구본 버튼을 누르면 목록. 컴퓨터는 메뉴 오른쪽 끝, 휴대폰은 메뉴 버튼 왼쪽 */
+.lang { position: relative; order: 10; margin-left: 22px; }
+.lang-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 34px; padding: 0 9px 0 9px; border-radius: 999px;
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  font-size: 13px; font-weight: 700; white-space: nowrap;
+}
+.lang-btn:hover, .lang-btn[aria-expanded="true"] { border-color: #cfcac0; }
+.lang-ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.lang-caret { width: 12px; height: 12px; flex: none; fill: none; stroke: var(--sub); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
+.lang-btn[aria-expanded="true"] .lang-caret { transform: rotate(180deg); }
+.lang-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; min-width: 148px; padding: 6px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 28px rgba(0, 0, 0, .12);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.lang-menu button {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: none;
+  font-size: 14.5px; color: var(--ink); text-align: left;
+}
+.lang-menu button:hover { background: var(--soft); }
+.lang-menu button[aria-checked="true"] { font-weight: 700; }
+.lang-menu button[aria-checked="true"]::after {
+  content: ""; width: 12px; height: 7px; margin-top: -3px;
+  border-left: 2px solid var(--cho); border-bottom: 2px solid var(--cho); transform: rotate(-45deg);
+}
+.site-header .nav { margin-left: auto; }
+html.i18n-wait body { visibility: hidden; } /* 영어로 바꾸기 전 한국어가 잠깐 보이지 않게 */
+
 @media (max-width: 767px) {
   :root { --header-h: 56px; }
   .menu-btn { display: block; }
@@ -80,11 +111,22 @@ button { cursor: pointer; }
     display: none;
   }
   .menu-open .nav { display: flex; }
+  .lang { order: 0; margin-left: auto; }
+  .lang-btn { width: 40px; height: 40px; padding: 0; justify-content: center; }
+  .lang-ic { width: 20px; height: 20px; }
+  .lang-tx, .lang-caret { display: none; }
+  .lang-menu { min-width: 160px; }
+  .lang-menu button { height: 46px; font-size: 16px; }
   .nav a { padding: 12px 0; font-size: 16px; border-bottom: 1px solid var(--soft); }
   .nav a:last-child { border-bottom: 0; }
 }
+/* 좁은 휴대폰: 로고·새 대국·언어·메뉴가 서로 붙지 않게 조금씩 줄임 (영어 로고가 더 김) */
+@media (max-width: 380px) {
+  .site-header { padding: 0 14px; }
+  .logo { gap: 8px; font-size: 17px; margin-right: 8px; }
+}
 
-/* ---------- 설정 버튼 (소리): 휴대폰은 메뉴 안, 컴퓨터는 대국 설정 카드 ---------- */
+/* ---------- 설정 버튼 (소리): 컴퓨터·태블릿은 대국 설정 카드, 휴대폰은 판 위 스피커 버튼 ---------- */
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .opts:has(> .opt:only-child) { grid-template-columns: 1fr; }
 .opt {
@@ -101,16 +143,11 @@ svg.opt-ic { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: 
 .opt[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
 .opt[aria-pressed="true"] .opt-st { background: var(--ink); color: #fff; }
 .opt[aria-pressed="true"] .opt-st::after { content: '켬'; }
+html[lang="en"] .opt-st::after { content: 'Off'; }
+html[lang="en"] .opt[aria-pressed="true"] .opt-st::after { content: 'On'; }
 .opt .off { display: none; }
 .opt[aria-pressed="false"] .on { display: none; }
 .opt[aria-pressed="false"] .off { display: inline; }
-.nav-opts { display: none; }
-@media (max-width: 767px) {
-  .nav-opts { display: block; padding: 6px 0 14px; border-bottom: 1px solid var(--soft); }
-  .nav-opts-t { font-size: 13px; font-weight: 700; color: var(--sub); margin-bottom: 8px; }
-  .nav-opts .opts { grid-template-columns: 1fr; } /* 메뉴 안에서는 한 줄에 하나씩 넓게 */
-  .nav-opts .opt { min-height: 52px; font-size: 16px; }
-}
 
 /* ---------- 푸터 ---------- */
 .site-footer {

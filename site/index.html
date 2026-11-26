@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-i18n>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>한수 장기 — 설치 없이 바로 두는 장기 AI 대국</title>
-<meta name="description" content="회원가입이나 앱 설치 없이 브라우저에서 바로 장기 AI와 대국하세요. 실력 4단계, 훈수, 무르기, 상차림 선택을 지원합니다.">
+<title data-en="Hansu Janggi — Play Janggi (Korean Chess) vs AI, No Install">한수 장기 — 설치 없이 바로 두는 장기 AI 대국</title>
+<meta name="description" data-en-content="Play Janggi (Korean chess) against an AI right in your browser. No sign-up, no install. 4 AI levels, hints, undo and game review." content="회원가입이나 앱 설치 없이 브라우저에서 바로 장기 AI와 대국하세요. 실력 4단계, 훈수, 무르기, 상차림 선택을 지원합니다.">
 <meta name="theme-color" content="#f5f4f0">
 <link rel="canonical" href="https://hansujanggi.com/">
 <meta property="og:url" content="https://hansujanggi.com/">
@@ -67,38 +67,45 @@
 </script>
 <meta name="google-adsense-account" content="ca-pub-6082998240145089">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6082998240145089" crossorigin="anonymous"></script>
+<script src="/assets/js/i18n.js?v=662e77f6c9"></script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="/assets/css/site.css?v=07b39de996">
-<link rel="stylesheet" href="/assets/css/game.css?v=f2f1fd23b0">
+<link rel="stylesheet" href="/assets/css/site.css?v=c675eb368d">
+<link rel="stylesheet" href="/assets/css/game.css?v=c73f117444">
 <link rel="modulepreload" href="/assets/engine/v1/ffish.js">
-<script src="/assets/js/site.js?v=1bbbb9792b" defer></script>
-<script src="/assets/js/game.js?v=a24968b6fc" type="module"></script>
+<script src="/assets/js/site.js?v=bd40df7957" defer></script>
+<script src="/assets/js/game.js?v=355e0bbb42" type="module"></script>
 </head>
 <body>
 <header class="site-header">
-  <a class="logo" href="/"><span class="logo-mark">將</span>한수 장기</a>
-  <button class="hdr-new" id="hdrNew" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>새 대국</button>
-  <button class="menu-btn" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span><b class="menu-tx">메뉴</b></button>
-  <nav class="nav" id="mainNav" aria-label="주 메뉴">
-    <div class="nav-opts" role="group" aria-label="설정"><div class="nav-opts-t">설정</div><div class="opts"><button class="opt" data-toggle="sound" aria-pressed="true"><svg class="opt-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3.5v-11L6 8z"/><path class="on" d="M13 7.5a3.5 3.5 0 0 1 0 5M15.2 5a7 7 0 0 1 0 10"/><path class="off" d="M13.5 7.5l4 5M17.5 7.5l-4 5"/></svg><span class="opt-tx">소리</span><span class="opt-st"></span></button></div></div>
-    <a href="/" aria-current="page">대국</a>
-    <a href="/rules/">장기 규칙</a>
-    <a href="/setups/">상차림</a>
-    <a href="/strategy/">초보 전략</a>
-    <a href="/engine/">엔진 소개</a>
+  <a class="logo" href="/" data-en="Hansu Janggi"><span class="logo-mark">將</span>한수 장기</a>
+  <button class="hdr-new" id="hdrNew" type="button" disabled data-en="New"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>새 대국</button>
+  <div class="lang">
+    <button class="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu" aria-label="언어 (Language)" data-en-aria-label="Language (언어)"><svg class="lang-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span class="lang-tx" data-en="English">한국어</span><svg class="lang-caret" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg></button>
+    <div class="lang-menu" id="langMenu" role="menu" hidden>
+      <button type="button" role="menuitemradio" data-lang="ko" lang="ko" aria-checked="true">한국어</button>
+      <button type="button" role="menuitemradio" data-lang="en" lang="en" aria-checked="false">English</button>
+    </div>
+  </div>
+  <button class="menu-btn" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span><b class="menu-tx" data-en="Menu">메뉴</b></button>
+  <nav class="nav" id="mainNav" aria-label="주 메뉴" data-en-aria-label="Main menu">
+    <a href="/" aria-current="page" data-en="Play">대국</a>
+    <a href="/rules/" data-en="Rules" data-en-href="/en/rules/">장기 규칙</a>
+    <a href="/setups/" data-en="Setups" data-en-href="/en/setups/">상차림</a>
+    <a href="/strategy/" data-en="Strategy" data-en-href="/en/strategy/">초보 전략</a>
+    <a href="/engine/" data-en="Engine" data-en-href="/en/engine/">엔진 소개</a>
   </nav>
 </header>
 
 <main class="game">
-  <h1 class="sr">장기 AI 대국 — 설치 없이 바로 두는 무료 장기</h1>
-  <section class="board-col" aria-label="장기판">
+  <h1 class="sr" data-en="Play Janggi (Korean Chess) Against AI — Free, No Install">장기 AI 대국 — 설치 없이 바로 두는 무료 장기</h1>
+  <section class="board-col" aria-label="장기판" data-en-aria-label="Janggi board">
     <div class="shared-bar" id="sharedBar" hidden>
-      <span>공유받은 기보를 보는 중입니다</span>
-      <button class="btn" id="sharedExit">내 대국으로</button>
+      <span data-en="You are viewing a shared game">공유받은 기보를 보는 중입니다</span>
+      <button class="btn" id="sharedExit" data-en="Back to my game">내 대국으로</button>
     </div>
     <!-- 휴대폰 복기 머리줄: 몇 번째 수를 보는지와 끝내기 -->
     <div class="rv-top" id="rvTop">
@@ -108,17 +115,18 @@
     <div class="pbar ai-bar">
       <div class="player"><span class="chip han" id="aiChip">漢</span><span id="aiName">AI · 고수</span>
         <span class="turn han" id="aiTurn" hidden><span class="dot"></span><span id="aiTurnText">차례</span></span></div>
-      <span class="m-eval" id="mEval" aria-label="형세">0.0</span>
+      <span class="m-eval" id="mEval" aria-label="형세" data-en-aria-label="Evaluation">0.0</span>
+      <button class="m-sound" type="button" data-toggle="sound" aria-pressed="true" aria-label="소리" title="소리" data-en-aria-label="Sound" data-en-title="Sound"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3.5v-11L6 8z"/><path class="on" d="M13 7.5a3.5 3.5 0 0 1 0 5M15.2 5a7 7 0 0 1 0 10"/><path class="off" d="M13.5 7.5l4 5M17.5 7.5l-4 5"/></svg></button>
     </div>
     <div class="m-evalbar" aria-hidden="true"><span id="mEvalFill"></span></div>
     <div class="board-wrap">
-      <svg id="board" viewBox="-30 -30 960 1060" role="img" aria-label="장기판. 내 기물을 누른 뒤 움직일 곳을 누르세요."></svg>
+      <svg id="board" viewBox="-30 -30 960 1060" role="img" aria-label="장기판. 내 기물을 누른 뒤 움직일 곳을 누르세요." data-en-aria-label="Janggi board. Tap one of your pieces, then tap where to move it."></svg>
       <div class="result" id="result" hidden>
         <div class="result-box" role="dialog" aria-live="assertive">
           <strong id="resultTitle"></strong>
           <p id="resultText"></p>
-          <div class="row"><button class="btn" id="resultUndo">무르기</button><button class="btn primary" id="resultNew">새 대국</button></div>
-          <div class="links"><button class="close" id="resultReview">복기·분석</button><button class="close" id="resultClose">판 보기</button></div>
+          <div class="row"><button class="btn" id="resultUndo" data-en="Undo">무르기</button><button class="btn primary" id="resultNew" data-en="New game">새 대국</button></div>
+          <div class="links"><button class="close" id="resultReview" data-en="Review &amp; analyze">복기·분석</button><button class="close" id="resultClose" data-en="View board">판 보기</button></div>
         </div>
       </div>
     </div>
@@ -134,25 +142,25 @@
         <div class="mb-status" id="mbStatusBox" aria-live="polite">
           <span class="mb-dot" id="mbDot"></span>
           <div class="mb-tx"><strong id="mbStatus">엔진을 불러오는 중…</strong><span id="mbSub"></span></div>
-          <button class="mb-pass" id="mbPass" type="button" hidden>한수 쉼</button>
+          <button class="mb-pass" id="mbPass" type="button" hidden data-en="Pass">한수 쉼</button>
         </div>
         <div class="mb-row">
-          <button class="btn hint" id="mbHint" type="button" disabled>훈수</button>
-          <button class="btn" id="mbUndo" type="button" disabled>무르기</button>
-          <button class="btn" id="mbReview" type="button" disabled>복기</button>
-          <button class="btn" id="mbShare" type="button" disabled>카톡 보내기</button>
-          <button class="btn primary" id="mbNew" type="button">새 대국</button>
+          <button class="btn hint" id="mbHint" type="button" disabled data-en="Hint">훈수</button>
+          <button class="btn" id="mbUndo" type="button" disabled data-en="Undo">무르기</button>
+          <button class="btn" id="mbReview" type="button" disabled data-en="Review">복기</button>
+          <button class="btn" id="mbShare" type="button" disabled data-en="Share">카톡 보내기</button>
+          <button class="btn primary" id="mbNew" type="button" data-en="New">새 대국</button>
         </div>
       </div>
       <div class="mb-rv">
         <div class="rv-card" id="rvCard" aria-live="polite"></div>
         <div class="rv-track">
-          <svg id="rvChart" role="slider" aria-label="수 이동. 눌러서 그 수로 갑니다." aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0"></svg>
-          <span class="rv-lab top" aria-hidden="true">초 유리</span><span class="rv-lab bot" aria-hidden="true">한 유리</span>
+          <svg id="rvChart" role="slider" aria-label="수 이동. 눌러서 그 수로 갑니다." data-en-aria-label="Move slider. Tap to jump to that move." aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0"></svg>
+          <span class="rv-lab top" aria-hidden="true" data-en="Cho ahead">초 유리</span><span class="rv-lab bot" aria-hidden="true" data-en="Han ahead">한 유리</span>
         </div>
         <div class="mb-row c3">
-          <button class="btn" id="rvPrev" type="button">◀ 이전</button>
-          <button class="btn" id="rvNext" type="button">다음 ▶</button>
+          <button class="btn" id="rvPrev" type="button" data-en="◀ Prev">◀ 이전</button>
+          <button class="btn" id="rvNext" type="button" data-en="Next ▶">다음 ▶</button>
           <button class="btn hint" id="rvMore" type="button">실수 찾기</button>
         </div>
       </div>
@@ -160,75 +168,75 @@
   </section>
 
   <aside class="panel">
-    <section class="card settings-card" aria-label="대국 설정">
-      <div class="label">대국 설정</div>
-      <div class="seg" id="levelSeg" role="group" aria-label="AI 실력">
-        <button data-level="0" aria-pressed="false">입문</button>
-        <button data-level="1" aria-pressed="false">중수</button>
-        <button data-level="2" aria-pressed="true">고수</button>
-        <button data-level="3" aria-pressed="false">최강</button>
+    <section class="card settings-card" aria-label="대국 설정" data-en-aria-label="Game settings">
+      <div class="label" data-en="Game settings">대국 설정</div>
+      <div class="seg" id="levelSeg" role="group" aria-label="AI 실력" data-en-aria-label="AI level">
+        <button data-level="0" aria-pressed="false" data-en="Easy">입문</button>
+        <button data-level="1" aria-pressed="false" data-en="Medium">중수</button>
+        <button data-level="2" aria-pressed="true" data-en="Hard">고수</button>
+        <button data-level="3" aria-pressed="false" data-en="Max">최강</button>
       </div>
-      <div class="seg" role="group" aria-label="내 진영" style="margin-top:12px">
-        <button id="sideCho" aria-pressed="true">초 · 먼저 둠</button>
-        <button id="sideHan" aria-pressed="false">한 · 나중에 둠</button>
+      <div class="seg" role="group" aria-label="내 진영" data-en-aria-label="Your side" style="margin-top:12px">
+        <button id="sideCho" aria-pressed="true" data-en="Cho · moves first">초 · 먼저 둠</button>
+        <button id="sideHan" aria-pressed="false" data-en="Han · moves second">한 · 나중에 둠</button>
       </div>
       <div class="two">
-        <div><label class="field-label" for="mySetup">내 상차림</label><div class="select"><select id="mySetup"></select></div></div>
-        <div><label class="field-label" for="engSetup">AI 상차림</label><div class="select"><select id="engSetup"></select></div></div>
+        <div><label class="field-label" for="mySetup" data-en="My setup">내 상차림</label><div class="select"><select id="mySetup"></select></div></div>
+        <div><label class="field-label" for="engSetup" data-en="AI setup">AI 상차림</label><div class="select"><select id="engSetup"></select></div></div>
       </div>
-      <p class="note">실력은 바로 바뀌고, 진영과 상차림은 새 대국부터 적용됩니다.</p>
-      <div class="opts card-opts" role="group" aria-label="설정"><button class="opt" data-toggle="sound" aria-pressed="true"><svg class="opt-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3.5v-11L6 8z"/><path class="on" d="M13 7.5a3.5 3.5 0 0 1 0 5M15.2 5a7 7 0 0 1 0 10"/><path class="off" d="M13.5 7.5l4 5M17.5 7.5l-4 5"/></svg><span class="opt-tx">소리</span><span class="opt-st"></span></button></div>
+      <p class="note" data-en="Level changes apply right away; side and setups apply from the next game.">실력은 바로 바뀌고, 진영과 상차림은 새 대국부터 적용됩니다.</p>
+      <div class="opts card-opts" role="group" aria-label="설정" data-en-aria-label="Settings"><button class="opt" data-toggle="sound" aria-pressed="true"><svg class="opt-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3.5v-11L6 8z"/><path class="on" d="M13 7.5a3.5 3.5 0 0 1 0 5M15.2 5a7 7 0 0 1 0 10"/><path class="off" d="M13.5 7.5l4 5M17.5 7.5l-4 5"/></svg><span class="opt-tx" data-en="Sound">소리</span><span class="opt-st"></span></button></div>
     </section>
 
-    <section class="card actions-card" aria-label="대국 조작">
+    <section class="card actions-card" aria-label="대국 조작" data-en-aria-label="Game controls">
       <div class="actions">
-        <button class="btn hint" id="hintBtn" disabled>훈수</button>
-        <button class="btn" id="undoBtn" disabled>무르기</button>
-        <button class="btn" id="passBtn" disabled>한수 쉼</button>
-        <button class="btn primary" id="newBtn" disabled>새 대국</button>
+        <button class="btn hint" id="hintBtn" disabled data-en="Hint">훈수</button>
+        <button class="btn" id="undoBtn" disabled data-en="Undo">무르기</button>
+        <button class="btn" id="passBtn" disabled data-en="Pass">한수 쉼</button>
+        <button class="btn primary" id="newBtn" disabled data-en="New game">새 대국</button>
       </div>
     </section>
 
     <section class="card status-card" aria-live="polite">
       <div class="status-line" id="statusText">엔진을 불러오는 중…</div>
       <div class="substatus" id="subText">처음 한 번만 엔진 파일(약 1MB)을 받습니다</div>
-      <div class="label" style="margin-bottom:8px">형세 <span id="evalText">0.0</span></div>
+      <div class="label" style="margin-bottom:8px" data-en="Evaluation">형세 <span id="evalText">0.0</span></div>
       <div class="evalbar"><span id="evalFill"></span></div>
-      <div class="evalrow"><span>초 유리</span><span>한 유리</span></div>
+      <div class="evalrow"><span data-en="Cho ahead">초 유리</span><span data-en="Han ahead">한 유리</span></div>
       <div class="material" id="materialText"></div>
     </section>
 
-    <section class="card analysis-card" id="analysisCard" aria-label="대국 분석" hidden>
-      <div class="label">대국 분석 <button class="mini" id="analyzeBtn" disabled>분석하기</button></div>
-      <p class="an-empty" id="anEmpty">엔진이 국면마다 다시 읽어 실수와 최선 수를 찾아 줍니다. 한 수에 0.3초쯤 걸립니다.</p>
+    <section class="card analysis-card" id="analysisCard" aria-label="대국 분석" data-en-aria-label="Game analysis" hidden>
+      <div class="label" data-en="Game analysis">대국 분석 <button class="mini" id="analyzeBtn" disabled>분석하기</button></div>
+      <p class="an-empty" id="anEmpty" data-en="The engine re-reads every position to find mistakes and the best moves. It takes about 0.3 seconds per move.">엔진이 국면마다 다시 읽어 실수와 최선 수를 찾아 줍니다. 한 수에 0.3초쯤 걸립니다.</p>
       <div class="an-progress" id="anProgress" hidden>
         <div class="an-bar"><span id="anFill"></span></div>
         <span class="an-count" id="anCount"></span>
-        <button class="mini" id="anStop">중지</button>
+        <button class="mini" id="anStop" data-en="Stop">중지</button>
       </div>
       <div class="an-chart" id="anChartWrap" hidden>
-        <svg id="anChart" role="img" aria-label="수마다 형세 변화. 위로 갈수록 초, 아래로 갈수록 한이 유리합니다. 누르면 그 수로 이동합니다."></svg>
-        <span class="an-lab top" aria-hidden="true">초 유리</span><span class="an-lab bot" aria-hidden="true">한 유리</span>
+        <svg id="anChart" role="img" aria-label="수마다 형세 변화. 위로 갈수록 초, 아래로 갈수록 한이 유리합니다. 누르면 그 수로 이동합니다." data-en-aria-label="Evaluation after each move. Higher favors Cho, lower favors Han. Click to jump to that move."></svg>
+        <span class="an-lab top" aria-hidden="true" data-en="Cho ahead">초 유리</span><span class="an-lab bot" aria-hidden="true" data-en="Han ahead">한 유리</span>
         <div class="an-tip" id="anTip" hidden><strong id="anTipVal"></strong><span id="anTipLab"></span></div>
       </div>
       <table class="an-sum" id="anSum" hidden>
-        <thead><tr><th scope="col"><span class="sr">진영</span></th><th scope="col">정확도</th><th scope="col">부정확</th><th scope="col">실수</th><th scope="col">패착</th></tr></thead>
+        <thead><tr><th scope="col"><span class="sr" data-en="Side">진영</span></th><th scope="col" data-en="Accuracy">정확도</th><th scope="col" data-en="Inacc.">부정확</th><th scope="col" data-en="Mistake">실수</th><th scope="col" data-en="Blunder">패착</th></tr></thead>
         <tbody>
-          <tr><th scope="row"><span class="chip cho">楚</span>초</th><td id="anAccC"></td><td id="anInaC"></td><td id="anMisC"></td><td id="anBluC"></td></tr>
-          <tr><th scope="row"><span class="chip han">漢</span>한</th><td id="anAccH"></td><td id="anInaH"></td><td id="anMisH"></td><td id="anBluH"></td></tr>
+          <tr><th scope="row" data-en="Cho"><span class="chip cho">楚</span>초</th><td id="anAccC"></td><td id="anInaC"></td><td id="anMisC"></td><td id="anBluC"></td></tr>
+          <tr><th scope="row" data-en="Han"><span class="chip han">漢</span>한</th><td id="anAccH"></td><td id="anInaH"></td><td id="anMisH"></td><td id="anBluH"></td></tr>
         </tbody>
       </table>
     </section>
 
     <section class="card moves-card">
-      <div class="label">수순 <button class="mini" id="shareBtn" disabled>기보 공유</button></div>
-      <div class="moves" id="moveList"><span class="empty">아직 둔 수가 없습니다</span></div>
-      <div class="replay" role="group" aria-label="복기 이동">
-        <button class="rbtn" id="navFirst"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-6 6 6 6"/></svg>처음</button>
-        <button class="rbtn" id="navPrev"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6"/></svg>이전</button>
+      <div class="label" data-en="Moves">수순 <button class="mini" id="shareBtn" disabled data-en="Share game">기보 공유</button></div>
+      <div class="moves" id="moveList"><span class="empty" data-en="No moves yet">아직 둔 수가 없습니다</span></div>
+      <div class="replay" role="group" aria-label="복기 이동" data-en-aria-label="Move navigation">
+        <button class="rbtn" id="navFirst" data-en="First"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-6 6 6 6"/></svg>처음</button>
+        <button class="rbtn" id="navPrev" data-en="Prev"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6"/></svg>이전</button>
         <span class="rpos" id="navPos" aria-live="polite">0 / 0</span>
-        <button class="rbtn" id="navNext">다음<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4l6 6-6 6"/></svg></button>
-        <button class="rbtn" id="navLast">끝<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l6 6-6 6"/></svg></button>
+        <button class="rbtn" id="navNext" data-en="Next">다음<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4l6 6-6 6"/></svg></button>
+        <button class="rbtn" id="navLast" data-en="Last">끝<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l6 6-6 6"/></svg></button>
       </div>
     </section>
 
@@ -242,32 +250,42 @@
   <div class="ng-box">
     <div class="ng-grip" aria-hidden="true"></div>
     <div class="ng-head">
-      <h2 id="ngTitle">새 대국</h2>
-      <button class="ng-x" id="ngCancel" type="button" aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+      <h2 id="ngTitle" data-en="New game">새 대국</h2>
+      <button class="ng-x" id="ngCancel" type="button" aria-label="닫기" data-en-aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
     </div>
-    <p class="ng-warn" id="ngWarn">지금 두던 대국은 끝나고 새로 시작합니다.</p>
+    <p class="ng-warn" id="ngWarn" data-en="Your current game will end and a new one will start.">지금 두던 대국은 끝나고 새로 시작합니다.</p>
 
-    <div class="ng-label">AI 실력</div>
-    <div class="ng-seg" id="ngLevel" role="group" aria-label="AI 실력">
-      <button type="button" data-level="0">입문</button>
-      <button type="button" data-level="1">중수</button>
-      <button type="button" data-level="2">고수</button>
-      <button type="button" data-level="3">최강</button>
+    <div class="ng-label" data-en="AI level">AI 실력</div>
+    <div class="ng-seg" id="ngLevel" role="group" aria-label="AI 실력" data-en-aria-label="AI level">
+      <button type="button" data-level="0" data-en="Easy">입문</button>
+      <button type="button" data-level="1" data-en="Medium">중수</button>
+      <button type="button" data-level="2" data-en="Hard">고수</button>
+      <button type="button" data-level="3" data-en="Max">최강</button>
     </div>
     <p class="ng-desc" id="ngLevelDesc"></p>
 
-    <div class="ng-label">내 진영</div>
-    <div class="ng-side" id="ngSide" role="group" aria-label="내 진영">
-      <button type="button" data-side="cho"><span class="ng-token cho">楚</span><span class="ng-side-tx"><b>초</b><span>먼저 둡니다</span></span></button>
-      <button type="button" data-side="han"><span class="ng-token han">漢</span><span class="ng-side-tx"><b>한</b><span>나중에 둡니다</span></span></button>
+    <div class="ng-label" data-en="Your side">내 진영</div>
+    <div class="ng-side" id="ngSide" role="group" aria-label="내 진영" data-en-aria-label="Your side">
+      <button type="button" data-side="cho"><span class="ng-token cho">楚</span><span class="ng-side-tx"><b data-en="Cho">초</b><span data-en="Goes first">먼저 둡니다</span></span></button>
+      <button type="button" data-side="han"><span class="ng-token han">漢</span><span class="ng-side-tx"><b data-en="Han">한</b><span data-en="Goes second">나중에 둡니다</span></span></button>
     </div>
 
-    <div class="ng-label">상차림 <span>양쪽 마(馬)·상(象)의 자리</span></div>
-    <div class="ng-su-row"><span class="ng-su-who">나</span><div class="ng-su" id="ngMySu" role="group" aria-label="내 상차림"></div></div>
-    <div class="ng-su-row"><span class="ng-su-who">AI</span><div class="ng-su" id="ngEngSu" role="group" aria-label="AI 상차림"></div></div>
+    <div class="ng-label" data-en="Setup">상차림</div>
+    <!-- 판 위 기물과 같은 모양(팔각형·상아색 면·진영 색)으로 맨 끝줄 마·상 자리를 보여 줌 -->
+    <svg class="ng-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><radialGradient id="ngFace" cx=".42" cy=".36" r=".8"><stop offset="0" stop-color="#fffdf7"/><stop offset=".75" stop-color="#f8f1e1"/><stop offset="1" stop-color="#efe3c8"/></radialGradient></defs></svg>
+    <div class="ng-su-cols">
+      <div class="ng-su-col">
+      <div class="ng-su-row"><span class="ng-su-who"><span class="ng-who-pc" id="ngMyPc"></span><b data-en="You">나</b><em id="ngMyName"></em></span></div>
+      <div class="ng-su" id="ngMySu" role="group" aria-label="내 상차림" data-en-aria-label="My setup"></div>
+      </div>
+      <div class="ng-su-col">
+      <div class="ng-su-row"><span class="ng-su-who"><span class="ng-who-pc" id="ngEngPc"></span><b>AI</b><em id="ngEngName"></em></span></div>
+      <div class="ng-su" id="ngEngSu" role="group" aria-label="AI 상차림" data-en-aria-label="AI setup"></div>
+      </div>
+    </div>
     <select id="ngMy" hidden></select><select id="ngEng" hidden></select>
 
-    <button class="btn primary ng-start" id="ngStart" type="button">대국 시작</button>
+    <button class="btn primary ng-start" id="ngStart" type="button" data-en="Start game">대국 시작</button>
   </div>
 </div>
 
@@ -275,33 +293,33 @@
 <div class="toast" id="toast" role="status" hidden></div>
 
 <section class="about" aria-labelledby="aboutTitle">
-  <h2 id="aboutTitle">설치 없이 바로 두는 무료 장기 AI 대국</h2>
-  <p class="about-lead">한수 장기는 회원가입이나 앱 설치 없이 브라우저에서 바로 장기 AI와 대국하는 사이트입니다. 오픈소스 장기 엔진 <a href="/engine/">Fairy-Stockfish</a>가 서버가 아닌 내 기기 안에서 직접 수를 읽습니다.</p>
+  <h2 id="aboutTitle" data-en="Play Janggi Against AI for Free — No Install">설치 없이 바로 두는 무료 장기 AI 대국</h2>
+  <p class="about-lead" data-en-html="Hansu Janggi lets you play Janggi (Korean chess) against an AI right in your browser, with no sign-up and no app to install. The open-source engine &lt;a href=&quot;/en/engine/&quot;&gt;Fairy-Stockfish&lt;/a&gt; reads the moves on your own device, not on a server.">한수 장기는 회원가입이나 앱 설치 없이 브라우저에서 바로 장기 AI와 대국하는 사이트입니다. 오픈소스 장기 엔진 <a href="/engine/">Fairy-Stockfish</a>가 서버가 아닌 내 기기 안에서 직접 수를 읽습니다.</p>
   <ul class="about-feat">
-    <li><strong>AI 실력 4단계</strong>입문 · 중수 · 고수 · 최강 중에서 내 실력에 맞게 고릅니다.</li>
-    <li><strong>배우며 두기</strong>훈수, 무르기, 한수 쉼, 형세 막대로 장기를 배우면서 둡니다.</li>
-    <li><strong>복기와 대국 분석</strong>지난 수를 넘겨 보고, 엔진이 찾아 준 실수와 최선 수를 확인합니다.</li>
-    <li><strong>상차림 선택</strong>마상상마 · 상마마상 · 마상마상 · 상마상마 네 가지 <a href="/setups/">상차림</a>을 고릅니다.</li>
+    <li data-en-html="&lt;strong&gt;4 AI levels&lt;/strong&gt;Pick Easy, Medium, Hard or Max to match your strength."><strong>AI 실력 4단계</strong>입문 · 중수 · 고수 · 최강 중에서 내 실력에 맞게 고릅니다.</li>
+    <li data-en-html="&lt;strong&gt;Learn as you play&lt;/strong&gt;Hints, undo, pass and an evaluation bar help you learn Janggi while you play."><strong>배우며 두기</strong>훈수, 무르기, 한수 쉼, 형세 막대로 장기를 배우면서 둡니다.</li>
+    <li data-en-html="&lt;strong&gt;Review and analysis&lt;/strong&gt;Step back through the game and see the mistakes and best moves the engine found."><strong>복기와 대국 분석</strong>지난 수를 넘겨 보고, 엔진이 찾아 준 실수와 최선 수를 확인합니다.</li>
+    <li data-en-html="&lt;strong&gt;Choose your setup&lt;/strong&gt;Pick one of the four &lt;a href=&quot;/en/setups/&quot;&gt;setups&lt;/a&gt; for your horses and elephants."><strong>상차림 선택</strong>마상상마 · 상마마상 · 마상마상 · 상마상마 네 가지 <a href="/setups/">상차림</a>을 고릅니다.</li>
   </ul>
 
-  <h2>자주 묻는 질문</h2>
+  <h2 data-en="Frequently asked questions">자주 묻는 질문</h2>
   <div class="about-faq">
-    <h3>무료인가요? 회원가입이 필요한가요?</h3>
-    <p>완전히 무료이고 회원가입도 앱 설치도 필요 없습니다. 이 페이지를 열면 바로 AI와 장기를 둘 수 있습니다.</p>
-    <h3>휴대폰에서도 장기를 둘 수 있나요?</h3>
-    <p>네. 휴대폰, 태블릿, PC의 웹 브라우저에서 모두 둘 수 있고, 화면 크기에 맞춰 장기판과 버튼이 배치됩니다.</p>
-    <h3>장기 AI는 얼마나 강한가요?</h3>
-    <p>오픈소스 장기 엔진 Fairy-Stockfish를 사용하며, 입문·중수·고수·최강 4단계 중에서 고를 수 있습니다. 최강은 사람이 이기기 매우 어려운 수준입니다.</p>
-    <h3>장기를 처음 배우는데 둘 수 있나요?</h3>
-    <p>입문 단계를 고르고, 막힐 때는 훈수 버튼으로 AI가 추천하는 수를 보거나 무르기로 다시 둘 수 있습니다. <a href="/rules/">장기 규칙</a>과 <a href="/strategy/">초보 전략</a> 글도 함께 읽어 보세요.</p>
-    <h3>두던 대국은 어떻게 되나요?</h3>
-    <p>진행 중인 대국은 브라우저에 자동으로 저장되어 다시 방문해도 이어서 둘 수 있습니다. 끝난 대국은 복기하거나 링크로 기보를 공유할 수 있습니다.</p>
+    <h3 data-en="Is it free? Do I need an account?">무료인가요? 회원가입이 필요한가요?</h3>
+    <p data-en="It is completely free, with no account and no app to install. Open this page and you can play Janggi against the AI right away.">완전히 무료이고 회원가입도 앱 설치도 필요 없습니다. 이 페이지를 열면 바로 AI와 장기를 둘 수 있습니다.</p>
+    <h3 data-en="Can I play on my phone?">휴대폰에서도 장기를 둘 수 있나요?</h3>
+    <p data-en="Yes. It works in the web browser on phones, tablets and computers, and the board and buttons adjust to your screen size.">네. 휴대폰, 태블릿, PC의 웹 브라우저에서 모두 둘 수 있고, 화면 크기에 맞춰 장기판과 버튼이 배치됩니다.</p>
+    <h3 data-en="How strong is the AI?">장기 AI는 얼마나 강한가요?</h3>
+    <p data-en="It uses the open-source engine Fairy-Stockfish, and you can choose from 4 levels: Easy, Medium, Hard and Max. Max is very hard for a human to beat.">오픈소스 장기 엔진 Fairy-Stockfish를 사용하며, 입문·중수·고수·최강 4단계 중에서 고를 수 있습니다. 최강은 사람이 이기기 매우 어려운 수준입니다.</p>
+    <h3 data-en="I am new to Janggi. Can I still play?">장기를 처음 배우는데 둘 수 있나요?</h3>
+    <p data-en-html="Choose Easy. When you get stuck, press Hint to see the move the AI suggests, or Undo to try again. You can also read the &lt;a href=&quot;/en/rules/&quot;&gt;rules&lt;/a&gt; and &lt;a href=&quot;/en/strategy/&quot;&gt;beginner strategy&lt;/a&gt; guides.">입문 단계를 고르고, 막힐 때는 훈수 버튼으로 AI가 추천하는 수를 보거나 무르기로 다시 둘 수 있습니다. <a href="/rules/">장기 규칙</a>과 <a href="/strategy/">초보 전략</a> 글도 함께 읽어 보세요.</p>
+    <h3 data-en="What happens to my game?">두던 대국은 어떻게 되나요?</h3>
+    <p data-en="A game in progress is saved in your browser automatically, so you can continue when you come back. You can review a finished game or share it as a link.">진행 중인 대국은 브라우저에 자동으로 저장되어 다시 방문해도 이어서 둘 수 있습니다. 끝난 대국은 복기하거나 링크로 기보를 공유할 수 있습니다.</p>
   </div>
 </section>
 
 <footer class="site-footer">
-  <span>© 2026 한수 장기 · <a href="/engine/">Fairy-Stockfish 엔진</a> 사용 (GPL-3.0)</span>
-  <nav><a href="/privacy/">개인정보처리방침</a><a href="/source/">소스 공개</a></nav>
+  <span data-en-html="© 2026 Hansu Janggi · Uses the &lt;a href=&quot;/en/engine/&quot;&gt;Fairy-Stockfish engine&lt;/a&gt; (GPL-3.0)">© 2026 한수 장기 · <a href="/engine/">Fairy-Stockfish 엔진</a> 사용 (GPL-3.0)</span>
+  <nav><a href="/privacy/" data-en="Privacy" data-en-href="/en/privacy/">개인정보처리방침</a><a href="/source/" data-en="Source code" data-en-href="/en/source/">소스 공개</a></nav>
 </footer>
 </body>
 </html>
