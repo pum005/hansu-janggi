@@ -10,7 +10,61 @@
 <meta property="og:url" content="https://hansujanggi.com/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="한수 장기 — 설치 없이 바로 두는 장기 AI 대국">
-<meta property="og:description" content="브라우저 안에서 엔진이 직접 수를 읽는 무료 장기 사이트">
+<meta property="og:description" content="회원가입·설치 없이 브라우저에서 바로 두는 무료 장기 AI 대국. 실력 4단계, 훈수, 무르기, 복기 분석.">
+<meta property="og:site_name" content="한수 장기">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://hansujanggi.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="한수 장기 — 설치 없이 바로 두는 장기 AI 대국">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://hansujanggi.com/#website",
+      "url": "https://hansujanggi.com/",
+      "name": "한수 장기",
+      "alternateName": ["한수장기", "Hansu Janggi"],
+      "inLanguage": "ko-KR"
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://hansujanggi.com/#app",
+      "name": "한수 장기 — 장기 AI 대국",
+      "url": "https://hansujanggi.com/",
+      "applicationCategory": "GameApplication",
+      "applicationSubCategory": "장기",
+      "operatingSystem": "Windows, macOS, Android, iOS (웹 브라우저)",
+      "browserRequirements": "WebAssembly를 지원하는 최신 브라우저",
+      "inLanguage": "ko-KR",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+      "description": "회원가입이나 앱 설치 없이 브라우저에서 바로 두는 무료 장기 AI 대국. 실력 4단계, 훈수, 무르기, 복기와 대국 분석을 지원합니다.",
+      "image": "https://hansujanggi.com/og-image.png",
+      "screenshot": "https://hansujanggi.com/og-image.png"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://hansujanggi.com/#faq",
+      "mainEntity": [
+        { "@type": "Question", "name": "무료인가요? 회원가입이 필요한가요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "완전히 무료이고 회원가입도 앱 설치도 필요 없습니다. 이 페이지를 열면 바로 AI와 장기를 둘 수 있습니다." } },
+        { "@type": "Question", "name": "휴대폰에서도 장기를 둘 수 있나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "네. 휴대폰, 태블릿, PC의 웹 브라우저에서 모두 둘 수 있고, 화면 크기에 맞춰 장기판과 버튼이 배치됩니다." } },
+        { "@type": "Question", "name": "장기 AI는 얼마나 강한가요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "오픈소스 장기 엔진 Fairy-Stockfish를 사용하며, 입문·중수·고수·최강 4단계 중에서 고를 수 있습니다. 최강은 사람이 이기기 매우 어려운 수준입니다." } },
+        { "@type": "Question", "name": "장기를 처음 배우는데 둘 수 있나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "입문 단계를 고르고, 막힐 때는 훈수 버튼으로 AI가 추천하는 수를 보거나 무르기로 다시 둘 수 있습니다. 장기 규칙과 초보 전략 글도 함께 읽어 보세요." } },
+        { "@type": "Question", "name": "두던 대국은 어떻게 되나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "진행 중인 대국은 브라우저에 자동으로 저장되어 다시 방문해도 이어서 둘 수 있습니다. 끝난 대국은 복기하거나 링크로 기보를 공유할 수 있습니다." } }
+      ]
+    }
+  ]
+}
+</script>
 <meta name="google-adsense-account" content="ca-pub-6082998240145089">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6082998240145089" crossorigin="anonymous"></script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -19,7 +73,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/assets/css/site.css?v=07b39de996">
-<link rel="stylesheet" href="/assets/css/game.css?v=08319a9367">
+<link rel="stylesheet" href="/assets/css/game.css?v=5479c53d5c">
 <link rel="modulepreload" href="/assets/engine/v1/ffish.js">
 <script src="/assets/js/site.js?v=1bbbb9792b" defer></script>
 <script src="/assets/js/game.js?v=a216277483" type="module"></script>
@@ -39,6 +93,7 @@
 </header>
 
 <main class="game">
+  <h1 class="sr">장기 AI 대국 — 설치 없이 바로 두는 무료 장기</h1>
   <section class="board-col" aria-label="장기판">
     <div class="shared-bar" id="sharedBar" hidden>
       <span>공유받은 기보를 보는 중입니다</span>
@@ -207,6 +262,31 @@
   </div>
 </div>
 
+
+<section class="about" aria-labelledby="aboutTitle">
+  <h2 id="aboutTitle">설치 없이 바로 두는 무료 장기 AI 대국</h2>
+  <p class="about-lead">한수 장기는 회원가입이나 앱 설치 없이 브라우저에서 바로 장기 AI와 대국하는 사이트입니다. 오픈소스 장기 엔진 <a href="/engine/">Fairy-Stockfish</a>가 서버가 아닌 내 기기 안에서 직접 수를 읽습니다.</p>
+  <ul class="about-feat">
+    <li><strong>AI 실력 4단계</strong>입문 · 중수 · 고수 · 최강 중에서 내 실력에 맞게 고릅니다.</li>
+    <li><strong>배우며 두기</strong>훈수, 무르기, 한수 쉼, 형세 막대로 장기를 배우면서 둡니다.</li>
+    <li><strong>복기와 대국 분석</strong>지난 수를 넘겨 보고, 엔진이 찾아 준 실수와 최선 수를 확인합니다.</li>
+    <li><strong>상차림 선택</strong>마상상마 · 상마마상 · 마상마상 · 상마상마 네 가지 <a href="/setups/">상차림</a>을 고릅니다.</li>
+  </ul>
+
+  <h2>자주 묻는 질문</h2>
+  <div class="about-faq">
+    <h3>무료인가요? 회원가입이 필요한가요?</h3>
+    <p>완전히 무료이고 회원가입도 앱 설치도 필요 없습니다. 이 페이지를 열면 바로 AI와 장기를 둘 수 있습니다.</p>
+    <h3>휴대폰에서도 장기를 둘 수 있나요?</h3>
+    <p>네. 휴대폰, 태블릿, PC의 웹 브라우저에서 모두 둘 수 있고, 화면 크기에 맞춰 장기판과 버튼이 배치됩니다.</p>
+    <h3>장기 AI는 얼마나 강한가요?</h3>
+    <p>오픈소스 장기 엔진 Fairy-Stockfish를 사용하며, 입문·중수·고수·최강 4단계 중에서 고를 수 있습니다. 최강은 사람이 이기기 매우 어려운 수준입니다.</p>
+    <h3>장기를 처음 배우는데 둘 수 있나요?</h3>
+    <p>입문 단계를 고르고, 막힐 때는 훈수 버튼으로 AI가 추천하는 수를 보거나 무르기로 다시 둘 수 있습니다. <a href="/rules/">장기 규칙</a>과 <a href="/strategy/">초보 전략</a> 글도 함께 읽어 보세요.</p>
+    <h3>두던 대국은 어떻게 되나요?</h3>
+    <p>진행 중인 대국은 브라우저에 자동으로 저장되어 다시 방문해도 이어서 둘 수 있습니다. 끝난 대국은 복기하거나 링크로 기보를 공유할 수 있습니다.</p>
+  </div>
+</section>
 
 <footer class="site-footer">
   <span>© 2026 한수 장기 · <a href="/engine/">Fairy-Stockfish 엔진</a> 사용 (GPL-3.0)</span>

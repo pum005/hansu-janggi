@@ -291,3 +291,23 @@ body.modal-open { overflow: hidden; }
 /* 대국 설정 카드 아래 설정 (소리) */
 .card-opts { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--soft); }
 @media (max-width: 639px) { .card-opts { display: none; } } /* 휴대폰은 메뉴 안에 있음 */
+
+/* ---------- 소개 · 자주 묻는 질문 (대국 화면 아래, 스크롤해야 보임) ---------- */
+.about {
+  width: 100%; max-width: 760px; margin: 0 auto;
+  padding: 40px 32px 56px; border-top: 1px solid var(--line);
+}
+.about h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 12px; }
+.about h2 + .about-faq { margin-top: 4px; }
+.about * + h2 { margin-top: 40px; }
+.about h3 { font-size: 16px; margin: 22px 0 6px; }
+.about p, .about li { font-size: 16px; line-height: 1.75; color: #2c2c2e; }
+.about-lead { color: var(--sub); }
+.about a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.about-feat { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.about-feat li { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; font-size: 15px; color: var(--sub); line-height: 1.6; }
+.about-feat strong { display: block; color: var(--ink); font-size: 16px; margin-bottom: 4px; }
+@media (max-width: 639px) {
+  .about { padding: 28px 16px 40px; }
+  .about-feat { grid-template-columns: 1fr; }
+}
