@@ -32,6 +32,12 @@ TEMPLATE = """<!doctype html>
 <meta property="og:type" content="article">
 <meta property="og:title" content="{title} — 한수 장기">
 <meta property="og:description" content="{desc}">
+<meta property="og:site_name" content="한수 장기">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="{domain}/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="google-adsense-account" content="ca-pub-6082998240145089">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6082998240145089" crossorigin="anonymous"></script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
