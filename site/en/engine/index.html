@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Janggi AI Engine: Fairy-Stockfish — Hansu Janggi</title>
+<meta name="description" content="The AI on Hansu Janggi is the Fairy-Stockfish engine built to run in your browser. Learn what the 4 levels mean and how hints and the evaluation work.">
+<meta name="theme-color" content="#f5f4f0">
+<link rel="canonical" href="https://hansujanggi.com/en/engine/">
+<link rel="alternate" hreflang="ko" href="https://hansujanggi.com/engine/">
+<link rel="alternate" hreflang="en" href="https://hansujanggi.com/en/engine/">
+<link rel="alternate" hreflang="x-default" href="https://hansujanggi.com/engine/">
+<meta property="og:url" content="https://hansujanggi.com/en/engine/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Janggi AI Engine: Fairy-Stockfish — Hansu Janggi">
+<meta property="og:description" content="The AI on Hansu Janggi is the Fairy-Stockfish engine built to run in your browser. Learn what the 4 levels mean and how hints and the evaluation work.">
+<meta property="og:site_name" content="Hansu Janggi">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hansujanggi.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="google-adsense-account" content="ca-pub-6082998240145089">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6082998240145089" crossorigin="anonymous"></script>
+<script src="/assets/js/i18n.js?v=662e77f6c9"></script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="/assets/css/site.css?v=c675eb368d">
+<link rel="stylesheet" href="/assets/css/article.css?v=85bf302007">
+<script src="/assets/js/site.js?v=bd40df7957" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="/"><span class="logo-mark">將</span>Hansu Janggi</a>
+  <div class="lang">
+    <button class="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="langMenu" aria-label="Language (언어)"><svg class="lang-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span class="lang-tx">English</span><svg class="lang-caret" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg></button>
+    <div class="lang-menu" id="langMenu" role="menu" hidden>
+      <button type="button" role="menuitemradio" data-lang="ko" lang="ko" aria-checked="false">한국어</button>
+      <button type="button" role="menuitemradio" data-lang="en" lang="en" aria-checked="true">English</button>
+    </div>
+  </div>
+  <button class="menu-btn" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span><b class="menu-tx">Menu</b></button>
+  <nav class="nav" id="mainNav" aria-label="Main menu">
+    <a href="/">Play</a>
+    <a href="/en/rules/">Rules</a>
+    <a href="/en/setups/">Setups</a>
+    <a href="/en/strategy/">Strategy</a>
+    <a href="/en/engine/" aria-current="page">Engine</a>
+  </nav>
+</header>
+
+<main class="article">
+<p class="eyebrow">How the AI plays</p>
+<h1>About the Engine</h1>
+<p class="lead">Your opponent on Hansu Janggi is the open-source engine <strong>Fairy-Stockfish</strong>. It calculates its moves inside your own browser, not on a server.</p>
+
+<h2>What is Fairy-Stockfish?</h2>
+<p>Fairy-Stockfish is an open-source project based on the world-famous chess engine Stockfish, extended to play many variants such as Janggi, xiangqi and shogi. It is released under the GPL-3.0 license, so anyone can use and modify it.</p>
+<p>Hansu Janggi rebuilds the engine as <strong>single-threaded WebAssembly</strong>. That lets it run in any browser without special server settings and without conflicting with ads. Because it uses only one CPU core, it is weaker than a multi-threaded desktop engine, but it is still a very tough opponent for people.</p>
+
+<h2>It runs on your device</h2>
+<ul>
+  <li>On your first visit, the engine and rules files (about 1 MB compressed) are downloaded once. After that they load from your browser cache.</li>
+  <li>The calculation runs in a background task (Web Worker), so the screen does not freeze while the engine thinks.</li>
+  <li>Your games are never sent to a server. A game in progress is kept only in this device's browser storage, so you can continue it when you come back.</li>
+</ul>
+
+<div class="ad-slot" data-ad="article"></div>
+
+<h2>The 4 levels</h2>
+<p>Each level sets both the engine's Skill Level and the time it spends per move. At lower skill levels the engine deliberately mixes in moves that are not the best.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Level</th><th>Skill Level</th><th>Time per move</th><th>Good for</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Easy</strong></td><td>0 / 20</td><td>0.3 s</td><td>Players who just learned the rules. It makes mistakes often.</td></tr>
+    <tr><td><strong>Medium</strong></td><td>7 / 20</td><td>0.7 s</td><td>Players who know basic strategy. Solid fundamentals.</td></tr>
+    <tr><td><strong>Hard</strong></td><td>14 / 20</td><td>1.5 s</td><td>Players who often win casual games.</td></tr>
+    <tr><td><strong>Max</strong></td><td>20 / 20</td><td>3 s</td><td>Anyone who wants to face the engine with no limits.</td></tr>
+  </tbody>
+</table></div>
+<p>The engine thinks for a fixed time only, so on a slow phone it reads less deeply in the same time and may be a little weaker.</p>
+
+<h2>Hints and evaluation</h2>
+<ul>
+  <li><strong>Hint</strong>: shows the best move found in 1.5 seconds at full strength, as a blue arrow. Whether to play it is up to you.</li>
+  <li><strong>Evaluation</strong>: a bar showing who the engine thinks is ahead. It reads like "Cho +1.4"; the bigger the number, the bigger that side's advantage. When it sees a forced mate, it shows "mates in N".</li>
+  <li><strong>Undo</strong>: takes back your last move. You can use it as often as you like.</li>
+</ul>
+
+<h2>Rule checking</h2>
+<p>Legal moves, check, bikjang and the game result are decided by the project's rules library (ffish). It uses the same rules as the engine, so the AI and the referee never disagree. The modified engine source and build steps are on the <a href="/en/source/">source code</a> page.</p>
+
+<div class="cta"><p>Play the engine right now.</p><a class="btn" href="/">Start a game</a></div>
+</main>
+
+<footer class="site-footer">
+  <span>© 2026 Hansu Janggi · Uses the <a href="/en/engine/">Fairy-Stockfish engine</a> (GPL-3.0)</span>
+  <nav><a href="/en/privacy/">Privacy</a><a href="/en/source/">Source code</a></nav>
+</footer>
+</body>
+</html>

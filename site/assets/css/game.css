@@ -158,6 +158,8 @@
 .rbtn svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .rbtn:hover:not(:disabled) { border-color: #cfcac0; }
 .rbtn:disabled { opacity: .35; cursor: default; }
+/* 영어 글자가 더 길어 좁은 태블릿(640~700px)에서 한 줄을 넘지 않게 */
+@media (max-width: 700px) { html[lang="en"] .rbtn { padding: 0 6px; } }
 .rpos { flex: 1; text-align: center; font-size: 13px; color: var(--sub); font-variant-numeric: tabular-nums; }
 .rpos.on { color: var(--blue); font-weight: 700; }
 
@@ -215,7 +217,10 @@
 
 /* ---------- 휴대폰: 스크롤 없이 한 화면에서 대국·복기·공유 ---------- */
 /* 컴퓨터·태블릿에서는 모두 숨김 */
-.mbar, .rv-top, .m-eval, .m-evalbar, .hdr-new { display: none; }
+@media (max-width: 380px) {
+  .site-header .hdr-new { padding: 0 12px 0 8px; } /* 좁은 휴대폰: 머리말 한 줄에 맞춤 */
+}
+.mbar, .rv-top, .m-eval, .m-evalbar, .hdr-new, .m-sound { display: none; }
 @media (max-width: 639px) {
   /* 머리말의 새 대국 */
   .hdr-new {
@@ -225,6 +230,7 @@
   }
   .hdr-new svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
   .hdr-new:disabled { opacity: .4; }
+  .hdr-new + .lang { margin-left: 0; }
 
   /* 판 + 조작이 화면 한 장에 들어가게: 판 크기를 남은 높이로 정함 */
   .game { display: block; padding: 8px 12px 0; }
@@ -241,8 +247,17 @@
 
   /* 판 위: AI 줄 + 형세 */
   .ai-bar { min-height: 30px; }
-  .m-eval { display: block; font-size: 14px; font-weight: 800; color: var(--sub); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .m-eval { display: block; margin-left: auto; font-size: 14px; font-weight: 800; color: var(--sub); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .m-eval.cho { color: var(--cho); } .m-eval.han { color: var(--han); }
+  /* 소리 켜고 끄기: 판 위 AI 줄 오른쪽 끝 (꺼지면 줄 그은 스피커) */
+  .m-sound {
+    display: grid; place-items: center; flex: none; width: 34px; height: 30px; margin-left: 8px; padding: 0;
+    border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink);
+  }
+  .m-sound svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .m-sound .off, .m-sound[aria-pressed="false"] .on { display: none; }
+  .m-sound[aria-pressed="false"] .off { display: inline; }
+  .m-sound[aria-pressed="false"] { color: var(--faint); }
   .m-evalbar { display: block; height: 6px; margin: -2px 4px 0; border-radius: 4px; background: #f0d6d2; overflow: hidden; }
   .m-evalbar span { display: block; height: 100%; width: 50%; background: var(--cho); transition: width .4s ease; }
   .board-col[data-m="review"] .ai-bar, .board-col[data-m="review"] .m-evalbar { display: none; }
@@ -289,7 +304,8 @@
     display: flex; flex-direction: column; justify-content: center; gap: 6px;
     background: var(--card); border: 1px solid var(--line); border-radius: 16px;
   }
-  .rv-h { display: flex; align-items: center; gap: 7px; font-size: 15px; white-space: nowrap; min-width: 0; color: #4a4a4f; }
+  .rv-card > * { flex: none; } /* 줄이 눌려 글자 아래가 잘리지 않게 */
+  .rv-h { display: flex; align-items: center; gap: 7px; font-size: 15px; line-height: 1.3; white-space: nowrap; min-width: 0; color: #4a4a4f; }
   .rv-h b { font-size: 16px; font-weight: 800; color: var(--ink); }
   .rv-h .chip { width: 22px; height: 22px; font-size: 12px; border-radius: 6px; }
   .rv-mv { margin-left: auto; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -299,7 +315,7 @@
   .rv-badge.inaccuracy { background: #fdf3e1; color: #a3640f; }
   .rv-badge.mistake { background: #fdebdc; color: #c25414; }
   .rv-badge.blunder { background: #fbe3e0; color: var(--han); }
-  .rv-note, .rv-alt { font-size: 14px; color: #4a4a4f; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rv-note, .rv-alt { font-size: 14px; color: #4a4a4f; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .rv-note.wrap { white-space: normal; }
   .rv-alt b { color: var(--blue); font-weight: 800; }
   .rv-alt i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; background: var(--blue); vertical-align: 3px; margin: 0 2px 0 4px; }
@@ -356,42 +372,59 @@
 .ng-x svg { width: 18px; height: 18px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
 .ng-warn { margin-top: 10px; padding: 9px 12px; border-radius: 12px; background: #fbefed; color: var(--han); font-size: 14px; font-weight: 600; }
 .ng-warn[hidden] { display: none; }
-.ng-label { display: flex; align-items: baseline; gap: 8px; margin: 18px 0 8px; font-size: 14px; font-weight: 700; color: #4a4a4f; }
+.ng-label { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 8px; font-size: 14px; font-weight: 700; color: #4a4a4f; }
 .ng-label span { font-size: 12.5px; font-weight: 500; color: var(--sub); }
 .ng-seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: #ebe8e1; }
 .ng-seg button { height: 46px; border: 0; border-radius: 10px; background: transparent; font-size: 16px; font-weight: 700; color: var(--sub); transition: background .15s, color .15s; }
 .ng-seg button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0, 0, 0, .12); }
 .ng-desc { margin-top: 8px; padding-left: 2px; font-size: 14px; color: var(--sub); line-height: 1.5; }
-.ng-side { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ng-side { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 .ng-side button {
-  display: flex; align-items: center; gap: 12px; padding: 12px; text-align: left;
+  display: flex; align-items: center; gap: 12px; padding: 8px 12px; text-align: left;
   border: 2px solid transparent; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px var(--line);
   transition: border-color .15s, background .15s;
 }
 .ng-side button[aria-pressed="true"][data-side="cho"] { border-color: var(--cho); background: #f1f8f4; box-shadow: none; }
 .ng-side button[aria-pressed="true"][data-side="han"] { border-color: var(--han); background: #fdf3f1; box-shadow: none; }
-.ng-token {
-  width: 44px; height: 44px; flex: none; display: grid; place-items: center; color: #fff;
-  font-family: var(--font-hanja); font-weight: 900; font-size: 21px;
-  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
-}
-.ng-token.cho { background: var(--cho); } .ng-token.han { background: var(--han); }
+/* 판 위 기물과 같은 모양의 작은 장기알 (진영 토큰·상차림 미리보기) */
+.mp { display: block; overflow: visible; }
+.mp .octa { fill: url(#ngFace); stroke-width: 2.2; stroke-linejoin: round; filter: drop-shadow(0 1px 1.2px rgba(90, 66, 32, .35)); }
+.mp .inner { fill: none; stroke-width: 1; opacity: .35; stroke-linejoin: round; }
+.mp text { font-family: var(--font-hanja); font-weight: 900; font-size: 26px; text-anchor: middle; dominant-baseline: central; }
+.mp.cho .octa, .mp.cho .inner { stroke: var(--cho); } .mp.cho text { fill: #136345; }
+.mp.han .octa, .mp.han .inner { stroke: var(--han); } .mp.han text { fill: #b2342a; }
+.ng-defs { position: absolute; }
+.ng-token { width: 42px; height: 42px; flex: none; }
+.ng-token .mp { width: 100%; height: 100%; }
 .ng-side-tx b { display: block; font-size: 18px; font-weight: 800; line-height: 1.25; }
-.ng-side-tx span { font-size: 13.5px; color: var(--sub); }
-.ng-su-row { display: flex; align-items: center; gap: 8px; }
-.ng-su-row + .ng-su-row { margin-top: 8px; }
-.ng-su-who { width: 24px; flex: none; font-size: 13.5px; font-weight: 700; color: var(--sub); }
-.ng-su { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; min-width: 0; }
-#ngEngSu { grid-template-columns: repeat(5, 1fr); }
-#ngEngSu .hj4 { font-size: 12px; letter-spacing: -0.06em; }
+.ng-side-tx span { font-size: 13.5px; color: var(--sub); white-space: nowrap; }
+@media (max-width: 359px) { .ng-side-tx span { white-space: normal; word-break: keep-all; } } /* 아주 좁은 화면은 두 줄로 */
+/* 상차림: 내 줄은 내 진영 색, AI 줄은 상대 진영 색. 나무판 띠 위에 마·상 넷 */
+/* 줄 이름(나·AI)은 줄 위에 작게 두어 카드가 폭을 다 쓰게 (장기알을 크게) */
+/* 나(왼쪽)·AI(오른쪽) 두 줄로 나란히, 상차림 넷은 위아래로 */
+.ng-su-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.ng-su-row { margin: 0 0 5px 2px; }
+.ng-su-who { display: flex; align-items: center; gap: 6px; }
+.ng-who-pc { width: 20px; height: 20px; }
+.ng-who-pc .mp { width: 100%; height: 100%; }
+.ng-su-who b { font-size: 13px; font-weight: 700; color: var(--sub); line-height: 1; }
+.ng-su-who em { font-style: normal; font-size: 13px; font-weight: 800; line-height: 1; }
+.ng-su-who em::before { content: '·'; margin-right: 6px; color: var(--faint); font-weight: 400; }
+.ng-su-who em.cho { color: var(--cho); } .ng-su-who em.han { color: var(--han); }
+.ng-su { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; }
 .ng-su button {
-  height: 52px; padding: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  border: 1px solid var(--line); border-radius: 12px; background: #fff;
+  min-width: 0; padding: 0; display: block; overflow: hidden;
+  border: 2px solid transparent; border-radius: 12px; background: none;
+  transition: border-color .15s, background .15s, opacity .15s;
 }
-.ng-su .hj4 { font-family: var(--font-hanja); font-weight: 900; font-size: 13px; letter-spacing: -0.04em; color: var(--ink); }
-.ng-su small { font-size: 11px; color: var(--sub); }
-.ng-su button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
-.ng-start { width: 100%; height: 58px; margin-top: 22px; font-size: 18px; font-weight: 800; border-radius: 16px; }
+.su-wood { display: block; padding: 5px 4px; background: linear-gradient(135deg, #e8bf78, #d6a258); }
+.su-rank { width: 100%; height: auto; }
+.su-rank .rank { stroke: #6b4a1f; stroke-opacity: .55; stroke-width: 1.4; }
+.su-rank text { font-size: 11px; }
+.ng-su button[aria-pressed="false"] .su-wood { filter: saturate(.75) brightness(1.04); }
+.ng-su[data-side="cho"] button[aria-pressed="true"] { border-color: var(--cho); box-shadow: 0 0 0 2px rgba(27, 122, 82, .2); }
+.ng-su[data-side="han"] button[aria-pressed="true"] { border-color: var(--han); box-shadow: 0 0 0 2px rgba(190, 58, 44, .2); }
+.ng-start { width: 100%; height: 56px; margin-top: 16px; font-size: 18px; font-weight: 800; border-radius: 16px; }
 body.modal-open { overflow: hidden; }
 
 /* 짧은 알림 */
@@ -422,7 +455,7 @@ body.modal-open { overflow: hidden; }
 
 /* 대국 설정 카드 아래 설정 (소리) */
 .card-opts { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--soft); }
-@media (max-width: 639px) { .card-opts { display: none; } } /* 휴대폰은 메뉴 안에 있음 */
+@media (max-width: 639px) { .card-opts { display: none; } } /* 휴대폰은 판 위 스피커 버튼(.m-sound) */
 
 /* ---------- 소개 · 자주 묻는 질문 (대국 화면 아래, 스크롤해야 보임) ---------- */
 .about {
