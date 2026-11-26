@@ -73,14 +73,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/assets/css/site.css?v=07b39de996">
-<link rel="stylesheet" href="/assets/css/game.css?v=5479c53d5c">
+<link rel="stylesheet" href="/assets/css/game.css?v=f2f1fd23b0">
 <link rel="modulepreload" href="/assets/engine/v1/ffish.js">
 <script src="/assets/js/site.js?v=1bbbb9792b" defer></script>
-<script src="/assets/js/game.js?v=a216277483" type="module"></script>
+<script src="/assets/js/game.js?v=a24968b6fc" type="module"></script>
 </head>
 <body>
 <header class="site-header">
   <a class="logo" href="/"><span class="logo-mark">將</span>한수 장기</a>
+  <button class="hdr-new" id="hdrNew" type="button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>새 대국</button>
   <button class="menu-btn" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span><b class="menu-tx">메뉴</b></button>
   <nav class="nav" id="mainNav" aria-label="주 메뉴">
     <div class="nav-opts" role="group" aria-label="설정"><div class="nav-opts-t">설정</div><div class="opts"><button class="opt" data-toggle="sound" aria-pressed="true"><svg class="opt-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8v4h3l4 3.5v-11L6 8z"/><path class="on" d="M13 7.5a3.5 3.5 0 0 1 0 5M15.2 5a7 7 0 0 1 0 10"/><path class="off" d="M13.5 7.5l4 5M17.5 7.5l-4 5"/></svg><span class="opt-tx">소리</span><span class="opt-st"></span></button></div></div>
@@ -99,10 +100,17 @@
       <span>공유받은 기보를 보는 중입니다</span>
       <button class="btn" id="sharedExit">내 대국으로</button>
     </div>
-    <div class="pbar">
+    <!-- 휴대폰 복기 머리줄: 몇 번째 수를 보는지와 끝내기 -->
+    <div class="rv-top" id="rvTop">
+      <div class="rv-top-tx"><strong id="rvTitle">복기</strong><span id="rvPos">0 / 0수</span></div>
+      <button class="btn" id="rvExit" type="button">끝내기</button>
+    </div>
+    <div class="pbar ai-bar">
       <div class="player"><span class="chip han" id="aiChip">漢</span><span id="aiName">AI · 고수</span>
         <span class="turn han" id="aiTurn" hidden><span class="dot"></span><span id="aiTurnText">차례</span></span></div>
+      <span class="m-eval" id="mEval" aria-label="형세">0.0</span>
     </div>
+    <div class="m-evalbar" aria-hidden="true"><span id="mEvalFill"></span></div>
     <div class="board-wrap">
       <svg id="board" viewBox="-30 -30 960 1060" role="img" aria-label="장기판. 내 기물을 누른 뒤 움직일 곳을 누르세요."></svg>
       <div class="result" id="result" hidden>
@@ -120,36 +128,33 @@
       <div class="muted" id="meSetup"></div>
     </div>
 
-    <!-- 휴대폰 전용: 판 바로 아래에서 상황에 맞는 버튼만 보여 줌 (스크롤 없이 쓰게) -->
+    <!-- 휴대폰 전용: 스크롤 없이 대국·복기·공유를 하도록 판 바로 아래에 상황별 조작을 모음 -->
     <div class="mbar" id="mbar" data-mode="play">
-      <div class="mb-status" aria-live="polite"><span class="mb-dot" id="mbDot"></span><div><strong id="mbStatus">엔진을 불러오는 중…</strong><span id="mbSub"></span></div></div>
-      <div class="mb-row c4" data-for="play">
-        <button class="btn hint" id="mbHint" disabled>훈수</button>
-        <button class="btn" id="mbUndo" disabled>무르기</button>
-        <button class="btn" id="mbPass" disabled>한수 쉼</button>
-        <button class="btn primary" id="mbNew" disabled>새 대국</button>
+      <div class="mb-play">
+        <div class="mb-status" id="mbStatusBox" aria-live="polite">
+          <span class="mb-dot" id="mbDot"></span>
+          <div class="mb-tx"><strong id="mbStatus">엔진을 불러오는 중…</strong><span id="mbSub"></span></div>
+          <button class="mb-pass" id="mbPass" type="button" hidden>한수 쉼</button>
+        </div>
+        <div class="mb-row">
+          <button class="btn hint" id="mbHint" type="button" disabled>훈수</button>
+          <button class="btn" id="mbUndo" type="button" disabled>무르기</button>
+          <button class="btn" id="mbReview" type="button" disabled>복기</button>
+          <button class="btn" id="mbShare" type="button" disabled>카톡 보내기</button>
+          <button class="btn primary" id="mbNew" type="button">새 대국</button>
+        </div>
       </div>
-      <button class="btn ghost mb-wide" data-for="play" id="mbBack" disabled>◀ 지난 수 다시 보기</button>
-      <div class="mb-row c2" data-for="review">
-        <button class="btn big" id="mbPrev">◀ 이전 수</button>
-        <button class="btn big" id="mbNext">다음 수 ▶</button>
-      </div>
-      <div class="mb-row c3" data-for="review">
-        <button class="btn hint" id="mbHint2">훈수</button>
-        <button class="btn" id="mbAnalyze">실수 찾기</button>
-        <button class="btn primary" id="mbExit">복기 끝내기</button>
-      </div>
-      <div class="mb-row c2" data-for="over">
-        <button class="btn big" id="mbReview">복기하기</button>
-        <button class="btn big primary" id="mbNew2">새 대국</button>
-      </div>
-      <div class="mb-row c2" data-for="over">
-        <button class="btn ghost" id="mbUndo2">무르기</button>
-        <button class="btn ghost" id="mbShare">기보 보내기 (카톡 등)</button>
-      </div>
-      <div class="mb-row" data-for="analyze">
-        <div class="mb-progress"><span id="mbFill"></span></div>
-        <button class="btn" id="mbStop">그만</button>
+      <div class="mb-rv">
+        <div class="rv-card" id="rvCard" aria-live="polite"></div>
+        <div class="rv-track">
+          <svg id="rvChart" role="slider" aria-label="수 이동. 눌러서 그 수로 갑니다." aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" tabindex="0"></svg>
+          <span class="rv-lab top" aria-hidden="true">초 유리</span><span class="rv-lab bot" aria-hidden="true">한 유리</span>
+        </div>
+        <div class="mb-row c3">
+          <button class="btn" id="rvPrev" type="button">◀ 이전</button>
+          <button class="btn" id="rvNext" type="button">다음 ▶</button>
+          <button class="btn hint" id="rvMore" type="button">실수 찾기</button>
+        </div>
       </div>
     </div>
   </section>
@@ -231,37 +236,43 @@
   </aside>
 </main>
 
-<!-- 새 대국 설정 (휴대폰에서 '새 대국'을 누르면 화면 전체로 열림) -->
+<!-- 새 대국 설정 (휴대폰: 아래에서 올라오는 시트) -->
 <div class="ng" id="newDialog" role="dialog" aria-modal="true" aria-labelledby="ngTitle" hidden>
+  <div class="ng-dim" id="ngDim"></div>
   <div class="ng-box">
-    <h2 id="ngTitle">새 대국</h2>
+    <div class="ng-grip" aria-hidden="true"></div>
+    <div class="ng-head">
+      <h2 id="ngTitle">새 대국</h2>
+      <button class="ng-x" id="ngCancel" type="button" aria-label="닫기"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+    </div>
     <p class="ng-warn" id="ngWarn">지금 두던 대국은 끝나고 새로 시작합니다.</p>
+
     <div class="ng-label">AI 실력</div>
-    <div class="ng-grid" id="ngLevel">
-      <button data-level="0"><b>입문</b><span>처음 배우는 분</span></button>
-      <button data-level="1"><b>중수</b><span>규칙을 아는 분</span></button>
-      <button data-level="2"><b>고수</b><span>장기 좀 두는 분</span></button>
-      <button data-level="3"><b>최강</b><span>있는 힘껏 둠</span></button>
+    <div class="ng-seg" id="ngLevel" role="group" aria-label="AI 실력">
+      <button type="button" data-level="0">입문</button>
+      <button type="button" data-level="1">중수</button>
+      <button type="button" data-level="2">고수</button>
+      <button type="button" data-level="3">최강</button>
     </div>
+    <p class="ng-desc" id="ngLevelDesc"></p>
+
     <div class="ng-label">내 진영</div>
-    <div class="ng-grid" id="ngSide">
-      <button data-side="cho"><b><span class="chip cho">楚</span>초</b><span>먼저 둠</span></button>
-      <button data-side="han"><b><span class="chip han">漢</span>한</b><span>나중에 둠</span></button>
+    <div class="ng-side" id="ngSide" role="group" aria-label="내 진영">
+      <button type="button" data-side="cho"><span class="ng-token cho">楚</span><span class="ng-side-tx"><b>초</b><span>먼저 둡니다</span></span></button>
+      <button type="button" data-side="han"><span class="ng-token han">漢</span><span class="ng-side-tx"><b>한</b><span>나중에 둡니다</span></span></button>
     </div>
-    <details class="ng-more">
-      <summary>상차림 바꾸기</summary>
-      <div class="two">
-        <div><label class="field-label" for="ngMy">내 상차림</label><div class="select"><select id="ngMy"></select></div></div>
-        <div><label class="field-label" for="ngEng">AI 상차림</label><div class="select"><select id="ngEng"></select></div></div>
-      </div>
-    </details>
-    <div class="ng-actions">
-      <button class="btn" id="ngCancel">취소</button>
-      <button class="btn primary" id="ngStart">대국 시작</button>
-    </div>
+
+    <div class="ng-label">상차림 <span>양쪽 마(馬)·상(象)의 자리</span></div>
+    <div class="ng-su-row"><span class="ng-su-who">나</span><div class="ng-su" id="ngMySu" role="group" aria-label="내 상차림"></div></div>
+    <div class="ng-su-row"><span class="ng-su-who">AI</span><div class="ng-su" id="ngEngSu" role="group" aria-label="AI 상차림"></div></div>
+    <select id="ngMy" hidden></select><select id="ngEng" hidden></select>
+
+    <button class="btn primary ng-start" id="ngStart" type="button">대국 시작</button>
   </div>
 </div>
 
+<!-- 짧은 알림 (링크 복사 등) -->
+<div class="toast" id="toast" role="status" hidden></div>
 
 <section class="about" aria-labelledby="aboutTitle">
   <h2 id="aboutTitle">설치 없이 바로 두는 무료 장기 AI 대국</h2>

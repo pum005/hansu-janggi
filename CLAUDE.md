@@ -30,6 +30,7 @@ OUT=/tmp/x.wasm ./engine/build.sh           # build to another path
 **Pages:**
 - `site/index.html` (game) and `site/404.html` are hand-written.
 - `site/{rules,setups,strategy,engine,privacy,source}/index.html` are **generated**: edit the body in `tools/pages/*.html` (first-line metadata comments `path`/`title`/`desc`). The header, nav and footer template is in `tools/build_pages.py` (`TEMPLATE`, `NAV`). Don't edit the generated files directly.
+- Mobile (≤639px) is a separate no-scroll UI on the same page: header `#hdrNew`, `#mbar` (play/over/review modes), new-game bottom sheet `#newDialog`. The panel cards are hidden there. `mrv` in game.js means mobile review mode, which can be on even while `st.view` is null (viewing the latest move). The board size comes from `--m-reserve` in game.css: if you change the height of the mobile controls, update it. Desktop must stay pixel-identical when you touch mobile code.
 - SEO: `site/index.html` has a visually hidden `<h1>`, JSON-LD (`WebSite`/`WebApplication`/`FAQPage`) in `<head>`, and a visible intro/FAQ section (`.about`) below the game. The FAQ text in the JSON-LD must match the visible FAQ.
 - `site/assets/js/site.js`: mobile menu and the ad config (`ADS` object at the top: provider `none`/`adsense`/`adfit`).
 
