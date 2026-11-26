@@ -32,6 +32,7 @@
 - **쉬운 복기(휴대폰)**: 수마다 '좋은 수·아쉬운 수·실수·큰 실수'와 승률 변화, 더 좋은 수를 파란 화살표로. 형세 막대를 눌러 이동하고 '다음 실수'로 건너뛰기
 - **보기 편하게**: 진한 보조 글자와 큰 휴대폰 글씨, 아이콘마다 글자 표시, 착수 소리(메뉴·설정의 '소리'로 끄기), AI가 둔 수 깜빡임
 - **반응형**: 데스크탑 · 태블릿 · 모바일 각각에 맞춘 배치
+- **한국어 · English**: 머리말의 번역 아이콘으로 바꾸기. 처음에는 브라우저 언어를 따름 (한국어면 한국어, 그 밖에는 영어)
 - **서버 비용 0원**: 정적 파일만으로 동작하고, 계산은 각자의 기기가 함
 - **글 페이지**: 장기 규칙, 상차림 가이드, 초보 전략, 엔진 소개
 
@@ -41,11 +42,13 @@
 site/                         배포 폴더 (빌드 단계 없음)
 ├── index.html                대국 화면
 ├── rules/ setups/ strategy/  글 페이지 ─┐
-├── engine/ privacy/ source/            ─┘ tools/build_pages.py 로 생성
+├── engine/ privacy/ source/            ─┤ tools/build_pages.py 로 생성
+├── en/                       영어 글 페이지 ─┘
 ├── assets/
 │   ├── css/                  site.css(공통) · game.css(대국) · article.css(글)
 │   ├── js/game.js            대국 로직 (규칙 판정 · 화면 · 엔진 통신)
 │   ├── js/site.js            모바일 메뉴 · 광고 설정
+│   ├── js/i18n.js            언어 고르기 (한국어 · English)
 │   └── engine/v1/            엔진 WASM · 실행 워커 · 규칙 라이브러리(ffish)
 └── _headers                  캐시 헤더 (Cloudflare)
 engine/                       엔진 빌드 스크립트 · 단일 스레드 패치
@@ -80,6 +83,8 @@ python3 -m http.server 8000      # http://localhost:8000
 ### 글 페이지 수정
 
 `tools/pages/*.html` 본문을 고친 뒤 생성기를 실행합니다. 머리말·메뉴·꼬리말은 생성기 템플릿에 있습니다.
+영어판은 `tools/pages/en/`에 같은 파일 이름으로 있으니 한국어 글을 고치면 함께 고쳐 주세요.
+대국 화면의 영어 글자는 `site/index.html`의 `data-en` 속성과 `game.js`의 `T('한국어', 'English')`에 있습니다.
 
 ```bash
 python3 tools/build_pages.py     # site/*/index.html, sitemap.xml, robots.txt 생성 + CSS·JS 버전 갱신

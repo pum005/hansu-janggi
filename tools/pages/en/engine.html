@@ -1,0 +1,44 @@
+<!-- path: /en/engine/ -->
+<!-- title: The Janggi AI Engine: Fairy-Stockfish -->
+<!-- desc: The AI on Hansu Janggi is the Fairy-Stockfish engine built to run in your browser. Learn what the 4 levels mean and how hints and the evaluation work. -->
+<p class="eyebrow">How the AI plays</p>
+<h1>About the Engine</h1>
+<p class="lead">Your opponent on Hansu Janggi is the open-source engine <strong>Fairy-Stockfish</strong>. It calculates its moves inside your own browser, not on a server.</p>
+
+<h2>What is Fairy-Stockfish?</h2>
+<p>Fairy-Stockfish is an open-source project based on the world-famous chess engine Stockfish, extended to play many variants such as Janggi, xiangqi and shogi. It is released under the GPL-3.0 license, so anyone can use and modify it.</p>
+<p>Hansu Janggi rebuilds the engine as <strong>single-threaded WebAssembly</strong>. That lets it run in any browser without special server settings and without conflicting with ads. Because it uses only one CPU core, it is weaker than a multi-threaded desktop engine, but it is still a very tough opponent for people.</p>
+
+<h2>It runs on your device</h2>
+<ul>
+  <li>On your first visit, the engine and rules files (about 1 MB compressed) are downloaded once. After that they load from your browser cache.</li>
+  <li>The calculation runs in a background task (Web Worker), so the screen does not freeze while the engine thinks.</li>
+  <li>Your games are never sent to a server. A game in progress is kept only in this device's browser storage, so you can continue it when you come back.</li>
+</ul>
+
+<div class="ad-slot" data-ad="article"></div>
+
+<h2>The 4 levels</h2>
+<p>Each level sets both the engine's Skill Level and the time it spends per move. At lower skill levels the engine deliberately mixes in moves that are not the best.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Level</th><th>Skill Level</th><th>Time per move</th><th>Good for</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Easy</strong></td><td>0 / 20</td><td>0.3 s</td><td>Players who just learned the rules. It makes mistakes often.</td></tr>
+    <tr><td><strong>Medium</strong></td><td>7 / 20</td><td>0.7 s</td><td>Players who know basic strategy. Solid fundamentals.</td></tr>
+    <tr><td><strong>Hard</strong></td><td>14 / 20</td><td>1.5 s</td><td>Players who often win casual games.</td></tr>
+    <tr><td><strong>Max</strong></td><td>20 / 20</td><td>3 s</td><td>Anyone who wants to face the engine with no limits.</td></tr>
+  </tbody>
+</table></div>
+<p>The engine thinks for a fixed time only, so on a slow phone it reads less deeply in the same time and may be a little weaker.</p>
+
+<h2>Hints and evaluation</h2>
+<ul>
+  <li><strong>Hint</strong>: shows the best move found in 1.5 seconds at full strength, as a blue arrow. Whether to play it is up to you.</li>
+  <li><strong>Evaluation</strong>: a bar showing who the engine thinks is ahead. It reads like "Cho +1.4"; the bigger the number, the bigger that side's advantage. When it sees a forced mate, it shows "mates in N".</li>
+  <li><strong>Undo</strong>: takes back your last move. You can use it as often as you like.</li>
+</ul>
+
+<h2>Rule checking</h2>
+<p>Legal moves, check, bikjang and the game result are decided by the project's rules library (ffish). It uses the same rules as the engine, so the AI and the referee never disagree. The modified engine source and build steps are on the <a href="/en/source/">source code</a> page.</p>
+
+<div class="cta"><p>Play the engine right now.</p><a class="btn" href="/">Start a game</a></div>

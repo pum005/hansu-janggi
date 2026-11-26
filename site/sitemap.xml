@@ -2,9 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://hansujanggi.com/</loc></url>
   <url><loc>https://hansujanggi.com/engine/</loc></url>
+  <url><loc>https://hansujanggi.com/en/engine/</loc></url>
   <url><loc>https://hansujanggi.com/privacy/</loc></url>
+  <url><loc>https://hansujanggi.com/en/privacy/</loc></url>
   <url><loc>https://hansujanggi.com/rules/</loc></url>
+  <url><loc>https://hansujanggi.com/en/rules/</loc></url>
   <url><loc>https://hansujanggi.com/setups/</loc></url>
+  <url><loc>https://hansujanggi.com/en/setups/</loc></url>
   <url><loc>https://hansujanggi.com/source/</loc></url>
+  <url><loc>https://hansujanggi.com/en/source/</loc></url>
   <url><loc>https://hansujanggi.com/strategy/</loc></url>
+  <url><loc>https://hansujanggi.com/en/strategy/</loc></url>
 </urlset>

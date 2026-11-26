@@ -1,0 +1,46 @@
+<!-- path: /en/source/ -->
+<!-- title: Source Code -->
+<!-- desc: The open-source software used by Hansu Janggi, the GPL-3.0 license notice, and where to find the modified engine source. -->
+<h1>Source Code</h1>
+<p class="lead">Hansu Janggi uses open-source software released under the GPL-3.0 license. As the license requires, the source of this site and of the modified engine are both public.</p>
+
+<h2>Source of this site</h2>
+<p>The site code, the modified engine source and the build steps are published in the repository below.</p>
+<div class="callout"><p>Repository: <a href="https://github.com/pum005/hansu-janggi" target="_blank" rel="noopener">github.com/pum005/hansu-janggi</a></p></div>
+<p>The site code is also distributed under GPL-3.0. The article text and design are separate works.</p>
+
+<h2>Open-source software used</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Name</th><th>Used for</th><th>License</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://github.com/fairy-stockfish/Fairy-Stockfish" target="_blank" rel="noopener">Fairy-Stockfish</a></td><td>Janggi AI engine, modified and built as single-threaded WebAssembly</td><td>GPL-3.0</td></tr>
+    <tr><td><a href="https://www.npmjs.com/package/ffish-es6" target="_blank" rel="noopener">ffish-es6</a></td><td>Legal moves, check, bikjang and game results</td><td>GPL-3.0</td></tr>
+    <tr><td><a href="https://github.com/orioncactus/pretendard" target="_blank" rel="noopener">Pretendard</a></td><td>Text font</td><td>SIL OFL 1.1</td></tr>
+    <tr><td><a href="https://fonts.google.com/noto/specimen/Noto+Serif+KR" target="_blank" rel="noopener">Noto Serif KR</a></td><td>Font for the Chinese characters on the pieces</td><td>SIL OFL 1.1</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Building the engine yourself</h2>
+<p>The <code>engine/</code> folder in the repository contains everything needed to build the <code>janggi-engine.wasm</code> this site serves.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>File</th><th>Contents</th></tr></thead>
+  <tbody>
+    <tr><td><code>build.sh</code></td><td>Downloads the original source (pinned commit) and wasi-sdk 25, applies the patch and builds</td></tr>
+    <tr><td><code>patches/single-thread.patch</code></td><td>Change to the original <code>thread.cpp</code>: runs the search in place without a separate thread</td></tr>
+    <tr><td><code>wasi_single_thread.h</code></td><td>Lock and thread stand-in types for the thread-less WASI environment</td></tr>
+    <tr><td><code>wasi_stubs.cpp</code></td><td>Empty implementations of two functions missing from WASI (<code>__cxa_thread_atexit</code>, <code>madvise</code>)</td></tr>
+  </tbody>
+</table></div>
+<p>Original: Fairy-Stockfish commit <code>52838835f7234e29fb48fd88eb39fb3c7e46fcfa</code> (2026-11-19). Clone the repository and run <code>./engine/build.sh</code> to produce the same file.</p>
+
+<h2>Changes from the original</h2>
+<ul>
+  <li>Changed to run on one thread instead of several, so it works in the browser without special server headers.</li>
+  <li>Built as WASI WebAssembly, with a small runner (<code>site/assets/engine/v1/engine-worker.js</code>) that emulates standard input and output in the browser.</li>
+  <li>The neural network (NNUE) file is not included, so the engine uses the classical evaluation.</li>
+  <li>The rules library ffish-es6 0.7.10 is used unmodified from npm. Its source is in the Fairy-Stockfish repository.</li>
+</ul>
+
+<h2>Full license text</h2>
+<p>The full text of the GNU General Public License v3.0 is available <a href="/LICENSE.txt">here</a>.</p>
+<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GPL-3.0 for details.</p>

@@ -6,18 +6,25 @@ import FFishModule from '../engine/v1/ffish.js';
 const ENGINE_DIR = new URL('../engine/v1/', import.meta.url);
 const SAVE_KEY = 'hansu-janggi:game:v1';
 
+// 언어: i18n.js가 <html lang>을 정해 둠. 화면 글자는 T('한국어', 'English')로 고름
+const EN = document.documentElement.lang === 'en';
+const T = (ko, en) => (EN ? en : ko);
+
+// 상차림 값(저장·공유에 쓰는 이름)은 언어와 상관없이 한국어. 화면에만 suName()으로 보임
 const SETUPS = ['마상상마', '상마마상', '마상마상', '상마상마'];
+const suName = (v) => (!EN ? v : v === '무작위' ? 'Random' : v.replace(/마/g, 'H').replace(/상/g, 'E'));
 const LEVELS = [
-  { name: '입문', skill: 0, ms: 300 },
-  { name: '중수', skill: 7, ms: 700 },
-  { name: '고수', skill: 14, ms: 1500 },
-  { name: '최강', skill: 20, ms: 3000 },
+  { name: T('입문', 'Easy'), skill: 0, ms: 300 },
+  { name: T('중수', 'Medium'), skill: 7, ms: 700 },
+  { name: T('고수', 'Hard'), skill: 14, ms: 1500 },
+  { name: T('최강', 'Max'), skill: 20, ms: 3000 },
 ];
 const HANJA = { cho: { k: '楚', r: '車', c: '包', n: '馬', b: '象', a: '士', p: '卒' },
                 han: { k: '漢', r: '車', c: '包', n: '馬', b: '象', a: '士', p: '兵' } };
 const SIZE = { k: 50, r: 44, c: 44, n: 44, b: 44, a: 36, p: 36 }; // 칸 간격 100 기준 반지름
 const POINTS = { r: 13, c: 7, n: 5, b: 3, a: 3, p: 2, k: 0 };
 const KO_NAME = { K: '궁', A: '사', R: '차', C: '포', H: '마', E: '상', P: '졸' };
+const EN_NAME = { K: 'General', A: 'Guard', R: 'Chariot', C: 'Cannon', H: 'Horse', E: 'Elephant', P: 'Soldier' };
 const NS = 'http://www.w3.org/2000/svg';
 const AN_MS = 300;       // 분석할 때 국면마다 엔진이 읽는 시간(ms)
 const MATE = 100000;     // 외통 점수: ±(MATE - 남은 수)
@@ -97,10 +104,11 @@ function rebuild() {
   for (const m of st.moves) { st.notes.push(noteFor(m)); board.push(m); }
 }
 function noteFor(m, b = board) {
-  if (isPass(parseMove(m))) return '한수 쉼';
+  if (isPass(parseMove(m))) return T('한수 쉼', 'Pass');
   const s = b.sanMove(m, ff.Notation.JANGGI); // 예: H02-83, 잡는 수는 R71x81
   const r = /^([A-Z])(\d+)[-x](\d+)/.exec(s);
   if (!r) return s;
+  if (EN) return r[0]; // 영어는 국제 표기 그대로 (H02-83)
   let name = KO_NAME[r[1]] || r[1];
   if (r[1] === 'P' && !b.turn()) name = '병';
   return `${r[2]}${name}${r[3]}`;
@@ -280,38 +288,41 @@ function renderPanel() {
   $('aiChip').className = `chip ${ai}`; $('aiChip').textContent = ai === 'cho' ? '楚' : '漢';
   $('meChip').className = `chip ${me}`; $('meChip').textContent = me === 'cho' ? '楚' : '漢';
   $('aiName').textContent = `AI · ${lv.name}`;
-  $('meName').textContent = st.shared ? '공유한 사람' : '나';
+  $('meName').textContent = st.shared ? T('공유한 사람', 'Sharer') : T('나', 'You');
   $('sharedBar').hidden = !st.shared;
-  $('meSetup').textContent = st.mySetup === '무작위' ? '' : `상차림 · ${st.mySetup}`;
+  $('meSetup').textContent = st.mySetup === '무작위' ? '' : `${T('상차림', 'Setup')} · ${suName(st.mySetup)}`;
   const aiTurn = $('aiTurn'), meTurn = $('meTurn');
   aiTurn.className = `turn ${ai}` + (st.thinking === 'engine' ? ' thinking' : '');
   meTurn.className = `turn ${me}` + (st.thinking === 'hint' ? ' thinking' : '');
   aiTurn.hidden = !(ready && !st.over && stm === ai && (!browsing || st.thinking === 'engine'));
   meTurn.hidden = !(ready && !st.over && stm === me && !browsing);
-  $('aiTurnText').textContent = st.thinking === 'engine' ? (st.depth ? `생각 중 · 깊이 ${st.depth}` : '생각 중') : '차례';
-  $('meTurnText').textContent = st.thinking === 'hint' ? '훈수 찾는 중' : '내 차례';
+  $('aiTurnText').textContent = st.thinking === 'engine' ? (st.depth ? T(`생각 중 · 깊이 ${st.depth}`, `Thinking · depth ${st.depth}`) : T('생각 중', 'Thinking')) : T('차례', 'To move');
+  $('meTurnText').textContent = st.thinking === 'hint' ? T('훈수 찾는 중', 'Finding a hint') : T('내 차례', 'Your turn');
 
   // 상태
   let status, sub = '';
-  if (!engineReady) { status = '엔진을 불러오는 중…'; sub = '처음 한 번만 엔진 파일(약 1MB)을 받습니다'; }
-  else if (st.thinking === 'engine') { status = '상대가 수를 읽는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
-  else if (st.thinking === 'analyze') { status = '대국을 분석하는 중'; sub = `국면 ${anDone} / ${anTotal} · 중지해도 끝난 부분은 남습니다`; }
-  else if (st.thinking === 'hint') { status = '훈수를 찾는 중'; sub = st.depth ? `${st.depth}수 앞까지 읽음` : '준비 중'; }
+  const readAhead = () => (st.depth ? T(`${st.depth}수 앞까지 읽음`, `Looked ${st.depth} moves ahead`) : T('준비 중', 'Getting ready'));
+  if (!engineReady) { status = T('엔진을 불러오는 중…', 'Loading the engine…'); sub = T('처음 한 번만 엔진 파일(약 1MB)을 받습니다', 'The engine (about 1 MB) is downloaded only once'); }
+  else if (st.thinking === 'engine') { status = T('상대가 수를 읽는 중', 'The AI is thinking'); sub = readAhead(); }
+  else if (st.thinking === 'analyze') { status = T('대국을 분석하는 중', 'Analyzing the game'); sub = T(`국면 ${anDone} / ${anTotal} · 중지해도 끝난 부분은 남습니다`, `Position ${anDone} / ${anTotal} · Stopping keeps what is done`); }
+  else if (st.thinking === 'hint') { status = T('훈수를 찾는 중', 'Looking for a hint'); sub = readAhead(); }
   else if (reviewing()) {
-    status = st.view === 0 ? '복기 · 첫 배치' : `복기 · ${st.view}수째 ${st.notes[st.view - 1]}`;
-    sub = st.over || st.shared ? '◀ ▶ 버튼으로 한 수씩 넘겨 보세요' : '맨 끝(▶|)으로 가면 이어서 둘 수 있습니다';
+    status = st.view === 0 ? T('복기 · 첫 배치', 'Review · start position') : T(`복기 · ${st.view}수째 ${st.notes[st.view - 1]}`, `Review · move ${st.view} ${st.notes[st.view - 1]}`);
+    sub = st.over || st.shared ? T('◀ ▶ 버튼으로 한 수씩 넘겨 보세요', 'Use ◀ ▶ to step through the moves') : T('맨 끝(▶|)으로 가면 이어서 둘 수 있습니다', 'Go to the end (▶|) to keep playing');
     const v = st.view > 0 ? judge(st.view - 1) : null;
     if (v) sub = judgeText(st.view - 1, v);
   }
   else if (st.shared) {
-    status = st.over ? `공유받은 기보 · ${st.over.title === '무승부' ? '무승부' : (board.result(false) === '1-0' ? '초' : '한') + ' 승'}` : '공유받은 기보 · 진행 중';
-    sub = `전체 ${st.moves.length}수 · ◀ 버튼으로 처음부터 넘겨 보세요`;
+    const res = st.over ? board.result(false) : '';
+    const out = res === '1/2-1/2' ? T('무승부', 'Draw') : res === '1-0' ? T('초 승', 'Cho wins') : T('한 승', 'Han wins');
+    status = `${T('공유받은 기보', 'Shared game')} · ${st.over ? out : T('진행 중', 'in progress')}`;
+    sub = T(`전체 ${st.moves.length}수 · ◀ 버튼으로 처음부터 넘겨 보세요`, `${st.moves.length} moves · Use ◀ to step back from the start`);
   }
   else if (st.over) { status = st.over.title; sub = st.over.text; } // 분석·복기 중이 아닐 때만 결과 문구
-  else { status = myTurn ? '내 차례' : '상대 차례'; sub = st.selected ? '움직일 곳을 누르세요' : '내 기물을 눌러 움직일 곳을 고르세요'; }
+  else { status = myTurn ? T('내 차례', 'Your turn') : T('상대 차례', "AI's turn"); sub = st.selected ? T('움직일 곳을 누르세요', 'Tap where to move') : T('내 기물을 눌러 움직일 곳을 고르세요', 'Tap one of your pieces to move it'); }
   if (browsing || st.thinking) { /* 복기·생각 중에는 위 문구를 그대로 */ }
-  else if (ready && !st.over && board.isCheck()) sub = `<span class="alert">장군!</span> ${stm === st.side ? '궁을 지켜야 합니다' : ''}`;
-  else if (ready && !st.over && board.isBikjang()) sub = '<span class="alert">빅장</span> 궁끼리 마주 보고 있습니다';
+  else if (ready && !st.over && board.isCheck()) sub = `<span class="alert">${T('장군!', 'Check!')}</span> ${stm === st.side ? T('궁을 지켜야 합니다', 'Protect your general') : ''}`;
+  else if (ready && !st.over && board.isBikjang()) sub = T('<span class="alert">빅장</span> 궁끼리 마주 보고 있습니다', '<span class="alert">Bikjang</span> The generals face each other');
   $('statusText').textContent = status;
   $('subText').innerHTML = sub;
   $('mbStatus').textContent = status;
@@ -329,7 +340,7 @@ function renderPanel() {
   et.className = evCho > 0 ? 'cho' : evCho < 0 ? 'han' : '';
   $('mEvalFill').style.width = pct.toFixed(1) + '%';
   $('mEval').textContent = et.textContent; $('mEval').className = 'm-eval ' + et.className;
-  if (board) { const m = material(shownBoard()); $('materialText').textContent = `기물 점수 초 ${m.cho} · 한 ${m.han}`; }
+  if (board) { const m = material(shownBoard()); $('materialText').textContent = T(`기물 점수 초 ${m.cho} · 한 ${m.han}`, `Material Cho ${m.cho} · Han ${m.han}`); }
 
   // 버튼
   $('hintBtn').disabled = browsing ? !ready || !!st.thinking || shownBoard().isGameOver(false) : !myTurn;
@@ -341,7 +352,7 @@ function renderPanel() {
   // 수순
   const list = $('moveList');
   list.classList.toggle('reviewing', reviewing());
-  if (!st.notes.length) list.innerHTML = '<span class="empty">아직 둔 수가 없습니다</span>';
+  if (!st.notes.length) list.innerHTML = `<span class="empty">${T('아직 둔 수가 없습니다', 'No moves yet')}</span>`;
   else {
     let html = '';
     const curI = shownCount() - 1; // 지금 판에 보이는 마지막 수
@@ -349,7 +360,7 @@ function renderPanel() {
       if (j >= st.notes.length) return `<span class="m ${side}"></span>`;
       const cls = `m ${side}` + (j === curI ? ` last${side === 'c' ? ' c' : ''}` : '');
       const v = judge(j), mk = v && MARKS[v.kind];
-      return `<span class="${cls}" data-i="${j}">${st.notes[j]}${mk ? ` <i class="q ${v.kind}" title="${mk.ko}">${mk.sym}</i>` : ''}</span>`;
+      return `<span class="${cls}" data-i="${j}">${st.notes[j]}${mk ? ` <i class="q ${v.kind}" title="${mk.name}">${mk.sym}</i>` : ''}</span>`;
     };
     for (let i = 0; i < st.notes.length; i += 2) html += `<span class="n">${i / 2 + 1}</span>${cell(i, 'c')}${cell(i + 1, 'h')}`;
     list.innerHTML = html;
@@ -441,13 +452,13 @@ let moveFx = null;
 function checkOver() {
   if (!board.isGameOver(false)) { st.over = null; return false; }
   const res = board.result(false);
-  const reason = board.isBikjang() ? '빅장으로 점수 판정' : board.isCheck() ? '외통수' : '규칙에 따른 판정';
-  if (res === '1/2-1/2') st.over = { title: '무승부', text: reason };
+  const reason = board.isBikjang() ? T('빅장으로 점수 판정', 'Bikjang, decided on points') : board.isCheck() ? T('외통수', 'Checkmate') : T('규칙에 따른 판정', 'Decided by the rules');
+  if (res === '1/2-1/2') st.over = { title: T('무승부', 'Draw'), text: reason };
   else {
     const winner = res === '1-0' ? 'cho' : 'han';
     st.over = winner === st.side
-      ? { title: '이겼습니다!', text: `${reason}로 AI(${LEVELS[st.level].name})를 꺾었습니다.` }
-      : { title: '졌습니다', text: `${reason}. 무르기로 돌아가 다시 둬 보세요.` };
+      ? { title: T('이겼습니다!', 'You won!'), text: T(`${reason}로 AI(${LEVELS[st.level].name})를 꺾었습니다.`, `${reason}. You beat the AI (${LEVELS[st.level].name}).`) }
+      : { title: T('졌습니다', 'You lost'), text: T(`${reason}. 무르기로 돌아가 다시 둬 보세요.`, `${reason}. Undo and try again.`) };
   }
   return true;
 }
@@ -486,8 +497,8 @@ function applyInfo(line, rootSide) {
   const d = /\bdepth (\d+)/.exec(line); if (d) st.depth = d[1];
   const cp = /score cp (-?\d+)/.exec(line), mate = /score mate (-?\d+)/.exec(line);
   const sign = rootSide === 'cho' ? 1 : -1;
-  if (cp) { st.evalCho = sign * +cp[1]; const v = st.evalCho / 100; st.evalText = (v > 0 ? '초 +' : v < 0 ? '한 +' : '') + Math.abs(v).toFixed(1); }
-  else if (mate) { const n = +mate[1] * sign; st.evalCho = n > 0 ? 5000 : -5000; st.evalText = `${n > 0 ? '초' : '한'} ${Math.abs(+mate[1])}수 외통`; }
+  if (cp) { st.evalCho = sign * +cp[1]; st.evalText = fmtEval(st.evalCho); }
+  else if (mate) { const n = +mate[1] * sign; st.evalCho = n > 0 ? 5000 : -5000; st.evalText = mateText(n > 0 ? 'cho' : 'han', Math.abs(+mate[1])); }
 }
 function onWorker(ev) {
   const msg = ev.data;
@@ -498,7 +509,7 @@ function onWorker(ev) {
   }
   if (!pending || msg.id !== pending.id) return;
   if (msg.type === 'info') { if (pending.kind !== 'analyze') { applyInfo(msg.line, pending.rootSide); renderPanel(); } return; }
-  if (msg.type === 'error') { st.thinking = null; pending = null; render(); $('subText').textContent = '엔진 오류: ' + msg.message; return; }
+  if (msg.type === 'error') { st.thinking = null; pending = null; render(); $('subText').textContent = T('엔진 오류: ', 'Engine error: ') + msg.message; return; }
   if (msg.type === 'bestmove') {
     const { kind, rootSide, at } = pending; pending = null;
     if (kind === 'analyze') { onAnalyzed(msg, rootSide, at); return; }
@@ -514,7 +525,7 @@ function startWorker() {
   engineReady = false; pending = null; st.thinking = null;
   worker = new Worker(new URL('engine-worker.js', ENGINE_DIR));
   worker.onmessage = onWorker;
-  worker.onerror = (e) => { $('statusText').textContent = '엔진을 시작하지 못했습니다'; $('subText').textContent = e.message || '새로고침해 보세요'; };
+  worker.onerror = (e) => { $('statusText').textContent = T('엔진을 시작하지 못했습니다', "Couldn't start the engine"); $('subText').textContent = e.message || T('새로고침해 보세요', 'Try reloading the page'); };
   worker.postMessage({ type: 'init', url: new URL('janggi-engine.wasm', ENGINE_DIR).href });
 }
 // 엔진이 읽는 중에 판을 바꿔야 하면 워커를 새로 띄움 (단일 스레드라 중간에 멈출 수 없음)
@@ -530,13 +541,16 @@ const parseScore = (line, side) => { // 엔진 info 줄 → 초 기준 점수
   if (mate) { const n = +mate[1]; return sign * (n >= 0 ? 1 : -1) * (MATE - Math.abs(n)); }
   return null;
 };
+const sideName = (s) => (s === 'cho' ? T('초', 'Cho') : T('한', 'Han'));
+const mateText = (s, n) => T(`${sideName(s)} ${n}수 외통`, `${sideName(s)} mates in ${n}`);
 function fmtEval(cp) {
-  if (Math.abs(cp) === MATE) return `${cp > 0 ? '초' : '한'} 승`; // 이미 끝난 국면
-  if (Math.abs(cp) > MATE / 2) return `${cp > 0 ? '초' : '한'} ${MATE - Math.abs(cp)}수 외통`;
+  const s = cp > 0 ? 'cho' : 'han';
+  if (Math.abs(cp) === MATE) return T(`${sideName(s)} 승`, `${sideName(s)} wins`); // 이미 끝난 국면
+  if (Math.abs(cp) > MATE / 2) return mateText(s, MATE - Math.abs(cp));
   const v = cp / 100;
-  return (v > 0 ? '초 +' : v < 0 ? '한 +' : '') + Math.abs(v).toFixed(1);
+  return (v ? `${sideName(s)} +` : '') + Math.abs(v).toFixed(1);
 }
-const MARKS = { inaccuracy: { sym: '?!', ko: '부정확' }, mistake: { sym: '?', ko: '실수' }, blunder: { sym: '??', ko: '패착' } };
+const MARKS = { inaccuracy: { sym: '?!', name: T('부정확', 'Inaccuracy') }, mistake: { sym: '?', name: T('실수', 'Mistake') }, blunder: { sym: '??', name: T('패착', 'Blunder') } };
 // j번째 수(국면 j → j+1)의 평가. 두 국면이 모두 분석돼야 함
 function judge(j) {
   const a = st.an.evals[j], b = st.an.evals[j + 1];
@@ -662,9 +676,9 @@ function showTip(i) {
   tip.hidden = false;
   tip.style.left = Math.max(60, Math.min(g.W - 60, g.x(i))) + 'px';
   const wc = Math.round(winCho(cp) * 100);
-  $('anTipVal').textContent = Math.abs(cp) > MATE / 2 ? fmtEval(cp) : wc >= 50 ? `초 ${wc}%` : `한 ${100 - wc}%`;
+  $('anTipVal').textContent = Math.abs(cp) > MATE / 2 ? fmtEval(cp) : wc >= 50 ? `${sideName('cho')} ${wc}%` : `${sideName('han')} ${100 - wc}%`;
   const v = i > 0 ? judge(i - 1) : null;
-  $('anTipLab').textContent = i === 0 ? '첫 배치' : `${i}수 ${st.notes[i - 1]}` + (v && MARKS[v.kind] ? ` · ${MARKS[v.kind].ko}` : '');
+  $('anTipLab').textContent = i === 0 ? T('첫 배치', 'Start position') : T(`${i}수 ${st.notes[i - 1]}`, `Move ${i} ${st.notes[i - 1]}`) + (v && MARKS[v.kind] ? ` · ${MARKS[v.kind].name}` : '');
 }
 function hideTip() { chartHover = null; $('anTip').hidden = true; renderChart(); }
 $('anChart').addEventListener('pointermove', (ev) => showTip(chartIndexAt(ev)));
@@ -681,7 +695,7 @@ function renderAnalysis() {
   const btn = $('analyzeBtn');
   btn.hidden = running;
   btn.disabled = !engineReady || !!st.thinking || all || !st.moves.length;
-  btn.textContent = all ? '분석 완료' : has ? '이어서 분석' : '분석하기';
+  btn.textContent = all ? T('분석 완료', 'Analyzed') : has ? T('이어서 분석', 'Continue') : T('분석하기', 'Analyze');
   $('anEmpty').hidden = has || running;
   $('anProgress').hidden = !running;
   if (running) {
@@ -709,11 +723,11 @@ function renderAnalysis() {
 
 // 상태 줄에 쓸 한 수 평가 문구. 더 나은 수가 있었으면 그 수를 알려 줌
 function judgeText(j, v) {
-  const head = { best: '최선의 수', good: '무난한 수' }[v.kind] || `<span class="q ${v.kind}">${MARKS[v.kind].sym}</span> ${MARKS[v.kind].ko}`;
+  const head = { best: T('최선의 수', 'Best move'), good: T('무난한 수', 'Good move') }[v.kind] || `<span class="q ${v.kind}">${MARKS[v.kind].sym}</span> ${MARKS[v.kind].name}`;
   const alt = st.an.best[j];
   if (!alt || alt === st.moves[j] || v.kind === 'best' || v.kind === 'good') return head;
   const b = new ff.Board('janggi', st.startFen);
-  try { for (const m of st.moves.slice(0, j)) b.push(m); return `${head} · 최선은 ${noteFor(alt, b)}`; }
+  try { for (const m of st.moves.slice(0, j)) b.push(m); return `${head} · ${T('최선은', 'best was')} ${noteFor(alt, b)}`; }
   finally { b.delete(); }
 }
 
@@ -758,17 +772,20 @@ $('mbShare').onclick = async () => {
   const url = shareUrl();
   if (!url) return;
   if (navigator.share) {
-    try { await navigator.share({ title: '한수 장기 기보', url }); return; }
+    try { await navigator.share({ title: T('한수 장기 기보', 'Hansu Janggi game'), url }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }
   }
-  try { await navigator.clipboard.writeText(url); toast('링크를 복사했습니다. 카톡에 붙여 넣어 보내세요'); }
-  catch (e) { toast('이 브라우저에서는 공유할 수 없습니다'); }
+  try { await navigator.clipboard.writeText(url); toast(T('링크를 복사했습니다. 카톡에 붙여 넣어 보내세요', 'Link copied. Paste it into a message to share')); }
+  catch (e) { toast(T('이 브라우저에서는 공유할 수 없습니다', "This browser can't share")); }
 };
 $('mbNew').onclick = $('hdrNew').onclick = () => openNewDialog();
 
 // 복기 화면
-const LABEL = { best: '최선의 수', good: '좋은 수', inaccuracy: '아쉬운 수', mistake: '실수', blunder: '큰 실수' };
-const plainMove = (note) => { const r = /^(\d+)(\D+?)(\d+)$/.exec(note); return r ? `${r[2]} ${r[1]}→${r[3]}` : note; };
+const LABEL = { best: T('최선의 수', 'Best move'), good: T('좋은 수', 'Good move'), inaccuracy: T('아쉬운 수', 'Inaccuracy'), mistake: T('실수', 'Mistake'), blunder: T('큰 실수', 'Blunder') };
+const plainMove = (note) => {
+  if (EN) { const r = /^([A-Z])(\d+)[-x](\d+)$/.exec(note); return r ? `${EN_NAME[r[1]]} ${r[2]}→${r[3]}` : note; }
+  const r = /^(\d+)(\D+?)(\d+)$/.exec(note); return r ? `${r[2]} ${r[1]}→${r[3]}` : note;
+};
 function noteAt(j, m) { // j수째 앞 국면에서 m을 두었을 때의 기보 표기
   const b = new ff.Board('janggi', st.startFen);
   try { for (const x of st.moves.slice(0, j)) b.push(x); return noteFor(m, b); } finally { b.delete(); }
@@ -780,34 +797,34 @@ function nextMiss(n) { // 지금 보는 수 다음의 실수·큰 실수 (수 �
 function rvCardHtml(n) {
   if (st.thinking === 'analyze') {
     const pct = anTotal ? 100 * anDone / anTotal : 0;
-    return `<div class="rv-h"><b>실수 찾는 중</b><span class="rv-mv">${anDone} / ${anTotal}</span></div>`
+    return `<div class="rv-h"><b>${T('실수 찾는 중', 'Finding mistakes')}</b><span class="rv-mv">${anDone} / ${anTotal}</span></div>`
       + `<div class="rv-prog"><span style="width:${pct.toFixed(1)}%"></span></div>`
-      + '<p class="rv-note">그만해도 읽은 데까지는 남습니다.</p>';
+      + `<p class="rv-note">${T('그만해도 읽은 데까지는 남습니다.', 'If you stop, the moves checked so far are kept.')}</p>`;
   }
-  if (n === 0) return '<div class="rv-h"><b>첫 배치</b></div><p class="rv-note wrap">‘다음 ▶’을 누르거나 아래 막대를 밀어서 한 수씩 넘겨 보세요.</p>';
+  if (n === 0) return `<div class="rv-h"><b>${T('첫 배치', 'Start position')}</b></div><p class="rv-note wrap">${T('‘다음 ▶’을 누르거나 아래 막대를 밀어서 한 수씩 넘겨 보세요.', 'Tap “Next ▶” or drag the bar below to step through the moves.')}</p>`;
   const j = n - 1, side = movedBy(j), v = judge(j);
-  const who = st.shared ? (side === 'cho' ? '초가' : '한이') : side === st.side ? '내가' : 'AI가';
-  let html = `<div class="rv-h"><span class="chip ${side}">${side === 'cho' ? '楚' : '漢'}</span><b>${n}수째</b><span>${who} 둔 수</span><span class="rv-mv">${plainMove(st.notes[j])}</span></div>`;
-  if (!v) return html + `<p class="rv-note wrap">‘실수 찾기’를 누르면 이 수가 좋은 수였는지 AI가 알려 줍니다.</p>`;
+  const who = st.shared ? T(side === 'cho' ? '초가 둔 수' : '한이 둔 수', `by ${sideName(side)}`) : side === st.side ? T('내가 둔 수', 'by you') : T('AI가 둔 수', 'by the AI');
+  let html = `<div class="rv-h"><span class="chip ${side}">${side === 'cho' ? '楚' : '漢'}</span><b>${T(`${n}수째`, `Move ${n}`)}</b><span>${who}</span><span class="rv-mv">${plainMove(st.notes[j])}</span></div>`;
+  if (!v) return html + `<p class="rv-note wrap">${T('‘실수 찾기’를 누르면 이 수가 좋은 수였는지 AI가 알려 줍니다.', 'Tap “Find mistakes” and the AI will tell you whether this was a good move.')}</p>`;
   const pct = (cp) => Math.round((side === 'cho' ? winCho(cp) : 1 - winCho(cp)) * 100);
-  const whose = st.shared ? (side === 'cho' ? '초' : '한') : side === st.side ? '내' : 'AI';
-  html += `<div class="rv-j"><span class="rv-badge ${v.kind}">${LABEL[v.kind]}</span><span>${whose} 승률 ${pct(st.an.evals[j])}% → ${pct(st.an.evals[j + 1])}%</span></div>`;
+  const whose = st.shared ? sideName(side) : side === st.side ? T('내', 'Your') : 'AI';
+  html += `<div class="rv-j"><span class="rv-badge ${v.kind}">${LABEL[v.kind]}</span><span>${whose} ${T('승률', 'win chance')} ${pct(st.an.evals[j])}% → ${pct(st.an.evals[j + 1])}%</span></div>`;
   const alt = st.an.best[j];
-  if (BAD.includes(v.kind) && alt && alt !== st.moves[j]) html += `<p class="rv-alt">더 좋은 수 <b>${plainMove(noteAt(j, alt))}</b> <i></i> 판의 파란 화살표</p>`;
-  else html += `<p class="rv-note">${v.kind === 'best' ? 'AI가 고른 수와 같습니다.' : '흐름을 잃지 않은 수입니다.'}</p>`;
+  if (BAD.includes(v.kind) && alt && alt !== st.moves[j]) html += `<p class="rv-alt">${T('더 좋은 수', 'Better')} <b>${plainMove(noteAt(j, alt))}</b> <i></i> ${T('판의 파란 화살표', 'blue arrow on the board')}</p>`;
+  else html += `<p class="rv-note">${v.kind === 'best' ? T('AI가 고른 수와 같습니다.', 'The same move the AI picked.') : T('흐름을 잃지 않은 수입니다.', 'This move kept the position steady.')}</p>`;
   return html;
 }
 function renderRv() {
   const n = shownCount(), N = st.moves.length;
-  $('rvTitle').textContent = st.shared ? '공유받은 기보' : '복기';
-  $('rvPos').textContent = n === 0 ? `첫 배치 · 전체 ${N}수` : `${n} / ${N}수`;
-  $('rvExit').textContent = st.shared ? '내 대국으로' : '끝내기';
+  $('rvTitle').textContent = st.shared ? T('공유받은 기보', 'Shared game') : T('복기', 'Review');
+  $('rvPos').textContent = n === 0 ? T(`첫 배치 · 전체 ${N}수`, `Start · ${N} moves`) : T(`${n} / ${N}수`, `${n} / ${N}`);
+  $('rvExit').textContent = st.shared ? T('내 대국으로', 'My game') : T('끝내기', 'Done');
   $('rvPrev').disabled = n === 0;
   $('rvNext').disabled = n >= N;
   const more = $('rvMore');
-  if (st.thinking === 'analyze') { more.dataset.act = 'stop'; more.textContent = '그만'; more.disabled = false; }
-  else if (analyzedAll()) { more.dataset.act = 'next'; more.textContent = '다음 실수 ▶'; more.disabled = nextMiss(n) < 0; }
-  else { more.dataset.act = 'analyze'; more.textContent = '실수 찾기'; more.disabled = !engineReady || !!st.thinking || !N; }
+  if (st.thinking === 'analyze') { more.dataset.act = 'stop'; more.textContent = T('그만', 'Stop'); more.disabled = false; }
+  else if (analyzedAll()) { more.dataset.act = 'next'; more.textContent = T('다음 실수 ▶', 'Next miss ▶'); more.disabled = nextMiss(n) < 0; }
+  else { more.dataset.act = 'analyze'; more.textContent = T('실수 찾기', 'Find mistakes'); more.disabled = !engineReady || !!st.thinking || !N; }
   more.classList.toggle('hint', more.dataset.act !== 'stop');
   $('rvCard').innerHTML = rvCardHtml(n);
   renderRvChart();
@@ -832,7 +849,7 @@ function renderRvChart() {
   const c = $('rvChart'), g = rvGeom(), ev = st.an.evals, n = shownCount(), N = st.moves.length;
   c.setAttribute('viewBox', `0 0 ${g.W} ${g.H}`);
   c.setAttribute('aria-valuemax', N); c.setAttribute('aria-valuenow', n);
-  c.setAttribute('aria-valuetext', n === 0 ? '첫 배치' : `${n}수째`);
+  c.setAttribute('aria-valuetext', n === 0 ? T('첫 배치', 'Start position') : T(`${n}수째`, `Move ${n}`));
   c.innerHTML = '';
   const mid = g.y(0);
   const pts = [];
@@ -872,22 +889,43 @@ mq.addEventListener('change', () => { if (!isMobile()) mrv = false; if (board) r
 
 // ---------- 새 대국 시트 (휴대폰) ----------
 // 고른 값은 '대국 시작'을 눌러야 적용되고, 닫으면 그대로
-const LEVEL_DESC = ['처음 배우는 분께 맞습니다. 실수도 곧잘 합니다.', '규칙을 아는 분께 맞습니다.', '장기 좀 두는 분께 맞습니다.', '있는 힘껏 둡니다. 이기기 아주 어렵습니다.'];
+const LEVEL_DESC = EN
+  ? ['For new players. It makes mistakes fairly often.', 'For players who know the rules.', 'For players with some experience.', 'Plays at full strength. Very hard to beat.']
+  : ['처음 배우는 분께 맞습니다. 실수도 곧잘 합니다.', '규칙을 아는 분께 맞습니다.', '장기 좀 두는 분께 맞습니다.', '있는 힘껏 둡니다. 이기기 아주 어렵습니다.'];
 const ng = { level: 2, side: 'cho', my: SETUPS[0], eng: SETUPS[0] };
 let ngReturnFocus = null;
-const suHanja = (v) => (v === '무작위' ? '？' : v.replace(/마/g, '馬').replace(/상/g, '象'));
-const suButtons = (list) => list.map((v) => `<button type="button" data-su="${v}" aria-label="${v}"><span class="hj4">${suHanja(v)}</span><small>${v}</small></button>`).join('');
+// 판 위 기물과 같은 모양의 작은 장기알 (팔각형·상아색 면·진영 색 테두리와 글자)
+const HANJA_SU = { 마: '馬', 상: '象' };
+const miniPiece = (x, y, r, ch) => `<polygon class="octa" points="${octagon(x, y, r)}"/><polygon class="inner" points="${octagon(x, y, r * .82)}"/><text x="${x}" y="${y + r * .08}">${ch}</text>`;
+const pieceSvg = (ch, side) => `<svg class="mp ${side}" viewBox="-25 -25 50 50" aria-hidden="true">${miniPiece(0, 0, 23, ch)}</svg>`;
+// 상차림 한 가지: 맨 끝줄 선 위에 마·상 넷을 왼쪽부터
+const rankSvg = (v, side) => `<svg class="mp su-rank ${side}" viewBox="0 0 100 20" aria-hidden="true"><line class="rank" x1="0" x2="100" y1="10" y2="10"/>${[...v].map((c, i) => miniPiece(12.5 + i * 25, 10, 9.2, HANJA_SU[c])).join('')}</svg>`;
+// 이름은 카드 대신 줄 머리(나 · 마상상마)에 보여 장기알을 크게
+const suButtons = (list) => list.map((v) => `<button type="button" data-su="${v}" aria-label="${suName(v)}"><span class="su-wood"></span></button>`).join('');
 $('ngMySu').innerHTML = suButtons(SETUPS);
-$('ngEngSu').innerHTML = suButtons([...SETUPS, '무작위']);
+$('ngEngSu').innerHTML = suButtons(SETUPS);
+document.querySelectorAll('.ng-token').forEach((t) => { t.innerHTML = pieceSvg(t.textContent, t.classList.contains('han') ? 'han' : 'cho'); });
 function paintNewDialog() {
   document.querySelectorAll('#ngLevel button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.level === ng.level)));
   document.querySelectorAll('#ngSide button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === ng.side)));
-  document.querySelectorAll('#ngMySu button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.su === ng.my)));
-  document.querySelectorAll('#ngEngSu button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.su === ng.eng)));
+  // 내 줄은 내 진영 색, AI 줄은 상대 진영 색
+  const rows = [['ngMySu', 'ngMyPc', 'ngMyName', ng.side, ng.my], ['ngEngSu', 'ngEngPc', 'ngEngName', other(ng.side), ng.eng]];
+  for (const [id, pc, nm, side, val] of rows) {
+    $(nm).textContent = suName(val);
+    $(nm).className = side;
+    const row = $(id);
+    row.dataset.side = side;
+    row.querySelectorAll('button').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.su === val));
+      b.querySelector('.su-wood').innerHTML = rankSvg(b.dataset.su, side);
+    });
+    $(pc).innerHTML = pieceSvg(side === 'cho' ? '楚' : '漢', side);
+  }
   $('ngLevelDesc').textContent = LEVEL_DESC[ng.level];
 }
 function openNewDialog() {
   ng.level = st.level; ng.side = chosenSide; ng.my = $('mySetup').value; ng.eng = $('engSetup').value;
+  if (!SETUPS.includes(ng.eng)) ng.eng = SETUPS[0]; // 휴대폰 시트에는 무작위가 없음 (컴퓨터 설정 카드에만)
   $('ngWarn').hidden = !(st.moves.length && !st.over && !st.shared); // 두던 대국이 있을 때만 경고
   paintNewDialog();
   ngReturnFocus = document.activeElement;
@@ -995,7 +1033,7 @@ function setLevel(lv) {
 }
 document.querySelectorAll('#levelSeg button').forEach((b) => { b.onclick = () => setLevel(+b.dataset.level); });
 
-const fillSetup = (id, withRandom) => { $(id).innerHTML = SETUPS.map((v) => `<option>${v}</option>`).join('') + (withRandom ? '<option>무작위</option>' : ''); };
+const fillSetup = (id, withRandom) => { $(id).innerHTML = [...SETUPS, ...(withRandom ? ['무작위'] : [])].map((v) => `<option value="${v}">${suName(v)}</option>`).join(''); };
 fillSetup('mySetup', false); fillSetup('engSetup', true);
 
 function newGame() {
@@ -1078,7 +1116,7 @@ async function shareGame(onCopied, onFail) {
   const url = shareUrl();
   if (!url) return;
   if (navigator.share && matchMedia('(pointer: coarse)').matches) {
-    try { await navigator.share({ title: '한수 장기 기보', url }); return; }
+    try { await navigator.share({ title: T('한수 장기 기보', 'Hansu Janggi game'), url }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }
   }
   try { await navigator.clipboard.writeText(url); onCopied(); }
@@ -1087,13 +1125,13 @@ async function shareGame(onCopied, onFail) {
 let shareTimer = 0;
 $('shareBtn').onclick = () => shareGame(() => {
   const btn = $('shareBtn');
-  btn.textContent = '링크 복사됨'; btn.classList.add('done');
+  btn.textContent = T('링크 복사됨', 'Link copied'); btn.classList.add('done');
   clearTimeout(shareTimer);
-  shareTimer = setTimeout(() => { btn.textContent = '기보 공유'; btn.classList.remove('done'); }, 2000);
+  shareTimer = setTimeout(() => { btn.textContent = T('기보 공유', 'Share game'); btn.classList.remove('done'); }, 2000);
 }, (url) => {
   $('subText').innerHTML = '';
   const a = document.createElement('a'); a.href = url; a.textContent = url; a.className = 'share-url';
-  $('subText').append('이 주소를 복사해 보내세요: ', a);
+  $('subText').append(T('이 주소를 복사해 보내세요: ', 'Copy and send this link: '), a);
 });
 window.addEventListener('hashchange', () => { if (/^#g=/.test(location.hash)) location.reload(); });
 
@@ -1134,6 +1172,6 @@ async function start() {
   startWorker();
 }
 start().catch((e) => {
-  $('statusText').textContent = '불러오지 못했습니다';
+  $('statusText').textContent = T('불러오지 못했습니다', "Couldn't load the game");
   $('subText').textContent = String((e && e.message) || e);
 });

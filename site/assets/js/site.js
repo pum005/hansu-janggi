@@ -38,7 +38,8 @@ const ADS = {
     const open = document.body.classList.toggle('menu-open');
     btn.setAttribute('aria-expanded', String(open));
     const tx = btn.querySelector('.menu-tx');
-    if (tx) tx.textContent = open ? '닫기' : '메뉴';
+    const en = document.documentElement.lang === 'en';
+    if (tx) tx.textContent = open ? (en ? 'Close' : '닫기') : (en ? 'Menu' : '메뉴');
   });
 })();
 
@@ -99,7 +100,7 @@ const ADS = {
     if (preview) {
       const size = kind === 'game' ? { desktop: '300 × 250', tablet: '728 × 90', mobile: '320 × 100' }[bp] : '300 × 250';
       slot.classList.add('on', 'placeholder');
-      slot.innerHTML = `<span>광고 영역</span><small>${size} · 로컬 미리보기에서만 보임</small>`;
+      slot.innerHTML = document.documentElement.lang === 'en' ? `<span>Ad area</span><small>${size} · local preview only</small>` : `<span>광고 영역</span><small>${size} · 로컬 미리보기에서만 보임</small>`;
     }
   }
 })();
